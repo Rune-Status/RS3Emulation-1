@@ -58,6 +58,11 @@ public class BinaryPlayerManager {
 	 * The default spawn position.
 	 */
 	private static final Position SPAWN_POSITION = new Position(3200, 3200, 0);
+	
+	/**
+	 * The current player file version. This should be incremented if new fields are added to the player data file
+	 */
+	private static final int PLAYER_FILE_VERSION = 1;
 
 	/**
 	 * Loads a player.
@@ -73,11 +78,16 @@ public class BinaryPlayerManager {
 		
 		DataInputStream inputStream = new DataInputStream(new FileInputStream(file));
 		
+		int version = inputStream.readShort();
+		
 		String username = StreamUtil.readString(inputStream);
 		String password = StreamUtil.readString(inputStream);
 		
 		if(!username.equalsIgnoreCase(message.getUsername()) || !password.equalsIgnoreCase(message.getPassword()))
 			return new LoadResult(null, INVALID_PASSWORD);
+		
+		String displayName = StreamUtil.readString(inputStream);
+		String prevDisplayName = StreamUtil.readString(inputStream);
 		
 		int x = inputStream.readUnsignedShort();
 		int y = inputStream.readUnsignedShort();
@@ -90,10 +100,12 @@ public class BinaryPlayerManager {
 			style[i] = inputStream.readByte();
 		
 		int[] colour = new int[5];
-		for(int i = 0; i < colour.length; i++)
+		for(int i = 0; i < colour.length; i++) {
 			colour[i] = inputStream.readByte();
+		}		
 		
 		Player player = new Player(message.getContext().channel(), message.getUsername(), message.getPassword(), new Position(x, y, height));
+		player.initDisplayName(displayName, prevDisplayName);
 		player.getAppearance().setGender(gender);
 		player.getAppearance().setLooks(style);
 		player.getAppearance().setColours(colour);
@@ -110,6 +122,8 @@ public class BinaryPlayerManager {
 	public static void savePlayer(Player player) throws IOException {
 		File file = BinaryPlayerUtil.getFile(player.getUsername());
 		DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(file));
+		
+		outputStream.writeShort(PLAYER_FILE_VERSION);
 		
 		StreamUtil.writeString(outputStream, player.getUsername());
 		StreamUtil.writeString(outputStream, player.getPassword());

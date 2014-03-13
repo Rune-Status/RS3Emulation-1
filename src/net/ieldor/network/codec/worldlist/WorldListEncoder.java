@@ -57,11 +57,11 @@ public class WorldListEncoder extends MessageToByteEncoder<WorldListMessage> {
 		}
 
 		World[] worlds = list.getWorlds();
-		int minId = worlds[0].getId();
-		int maxId = worlds[0].getId();
+		int minId = worlds[0].getNodeId();
+		int maxId = worlds[0].getNodeId();
 		for (int i = 1; i < worlds.length; i++) {
 			World world = worlds[i];
-			int id = world.getId();
+			int id = world.getNodeId();
 
 			if (id > maxId)
 				maxId = id;
@@ -74,7 +74,7 @@ public class WorldListEncoder extends MessageToByteEncoder<WorldListMessage> {
 		ByteBufUtils.writeSmart(buf, worlds.length);
 
 		for (World world : worlds) {
-			ByteBufUtils.writeSmart(buf, world.getId() - minId);
+			ByteBufUtils.writeSmart(buf, world.getNodeId() - minId);
 			buf.writeByte(world.getCountry());
 			buf.writeInt(world.getFlags());
 			ByteBufUtils.writeWorldListString(buf, world.getActivity());
@@ -85,7 +85,7 @@ public class WorldListEncoder extends MessageToByteEncoder<WorldListMessage> {
 
 		for (int i = 0; i < worlds.length; i++) {
 			World world = worlds[i];
-			ByteBufUtils.writeSmart(buf, world.getId() - minId);
+			ByteBufUtils.writeSmart(buf, world.getNodeId() - minId);
 			buf.writeShort(0);
 		}
 

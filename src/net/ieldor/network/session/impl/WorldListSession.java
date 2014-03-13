@@ -62,7 +62,7 @@ public class WorldListSession extends Session {
 	 */
 	@Override
 	public void message(Object obj) {
-		World[] worlds = { new World(1, World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, 0, "Ieldor BETA", "127.0.0.1"), new World(2, World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, 0, "Ieldor BETA", "127.0.0.1") };
+		World[] worlds = { new World(1, "World 1", World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, 0, "Ieldor BETA", "127.0.0.1"), new World(2, "World 2", World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, 0, "Ieldor BETA", "127.0.0.1") };
 		int[] players = { 0 };
 		channel.write(new WorldListMessage(0xDEADBEEF, COUNTRIES, worlds, players)).addListener(ChannelFutureListener.CLOSE);
 	}

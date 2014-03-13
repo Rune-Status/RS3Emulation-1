@@ -48,6 +48,11 @@ public class Player extends Entity {
 	private String username, password;
 	
 	/**
+	 * The current and previous display names of the user.
+	 */
+	private String displayName, prevDisplayName;
+	
+	/**
 	 * The action sender instance.
 	 */
 	private ActionSender actionSender = new ActionSender(this);
@@ -86,6 +91,15 @@ public class Player extends Entity {
 			actionSender.sendLogin();
 		}
 	}
+	
+	public void initDisplayName (String name, String prevName) {
+		prevDisplayName = prevName;
+		displayName = name;
+	}
+	
+	public void changeDisplayName (String newName) {
+		//TODO Write display name change logic
+	}
 
 	/**
 	 * Gets the channel.
@@ -101,6 +115,22 @@ public class Player extends Entity {
 	 */
 	public String getUsername() {
 		return username;
+	}
+	
+	/**
+	 * Gets the current display name of the player.
+	 * @return the display name
+	 */
+	public String getDisplayName () {
+		return (displayName == null ? username : displayName);
+	}
+	
+	/**
+	 * Gets the previous display name for the player.
+	 * @return the previous display name
+	 */
+	public String getPrevDisplayName () {
+		return prevDisplayName;
 	}
 
 	/**

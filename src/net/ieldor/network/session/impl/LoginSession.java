@@ -16,27 +16,15 @@
  */
 package net.ieldor.network.session.impl;
 
-import java.io.IOException;
-import java.math.BigInteger;
-
-
-
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.timeout.ReadTimeoutHandler;
+
+import java.math.BigInteger;
+
 import net.ieldor.Constants;
-import net.ieldor.Main;
-import net.ieldor.game.model.player.LoadResult;
-import net.ieldor.game.model.player.Player;
-import net.ieldor.io.BinaryPlayerManager;
 import net.ieldor.io.InputStream;
-import net.ieldor.network.codec.login.LoginDecoder;
-import net.ieldor.network.codec.login.LoginEncoder;
 import net.ieldor.network.codec.login.LoginPayload;
-import net.ieldor.network.codec.messages.LoginHandshakeMessage;
 import net.ieldor.network.codec.messages.LoginResponse;
 import net.ieldor.network.session.Session;
 import net.ieldor.utility.Base37Utils;
@@ -80,6 +68,8 @@ public class LoginSession extends Session {
 				}
 			}
 		}
+	
+	
 
 		private void decodeLobbyLogin(ByteBuf buffer) {
 			int secureBufferSize = buffer.readShort() & 0xFFFF;

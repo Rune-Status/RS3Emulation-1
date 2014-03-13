@@ -34,7 +34,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 public class PacketBufDecoder extends ByteToMessageDecoder<Packet> {
 	
 	private static final int[] SIZES = new int[256];
-	static {
+	static {//TODO Update packet sizes to specific revision
 		SIZES[0] = 0;
         SIZES[1] = -3;
         SIZES[2] = -3;

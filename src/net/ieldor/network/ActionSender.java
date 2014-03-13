@@ -16,12 +16,16 @@
  */
 package net.ieldor.network;
 
+import java.util.List;
+
+import net.ieldor.game.chat.Friend;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
 import net.ieldor.utility.BinaryLandscapeHandler;
+import net.ieldor.utility.world.World;
 
 /**
  * A class used to store the packets (actions) that an {@link Entity} can
@@ -31,6 +35,24 @@ import net.ieldor.utility.BinaryLandscapeHandler;
  * 
  */
 public class ActionSender {
+	
+	//TODO: Update packet opcodes to the required revision
+	private static final int KEEP_ALIVE_PACKET = 54;
+	private static final int DYNAMIC_VARP_PACKET = 9;
+	private static final int FIXED_VARP_PACKET = 105;
+	
+	private static final int UNLOCK_FRIENDS_LIST = 18;
+	private static final int FRIENDS_PACKET = 2;	
+	private static final int IGNORES_PACKET = 14;
+	private static final int FRIENDS_CHANNEL_PACKET = 82;
+	private static final int CLAN_CHANNEL_PACKET = 73;
+	private static final int ONLINE_STATUS_PACKET = 47;
+	
+	private static final int WINDOW_PANE_PACKET = 68;
+	private static final int WORLD_LIST_PACKET = 51;
+	private static final int MESSAGE_PACKET = 95;
+	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;
+	
 
 	/**
 	 * The player.
@@ -51,11 +73,131 @@ public class ActionSender {
 	}
 	
 	/**
+	 * Sends a ping (keep-alive) packet back to the client. Used to ensure the connection is not dropped
+	 */
+	public void sendPing () {
+		PacketBuf buf = new PacketBuf(KEEP_ALIVE_PACKET);
+		player.getChannel().write(buf.toPacket());
+	}
+	
+	/**
+	 * Sets the top-level interface (window pane) to the specified interface
+	 * @param id	The interface ID of the window pane to use
+	 * @param type	The type of window pane (usually zero)
+	 */
+	public void sendWindowPane (int id, int type) {
+		//NOTE: The order and encoding methods of this packet vary between client revisions
+		int[] xteas = new int[4];
+		
+		PacketBuf buf = new PacketBuf(WINDOW_PANE_PACKET);
+		buf.putLEInt(xteas[3]);
+		buf.putLEShortA(id);
+		buf.putLEInt(xteas[0]);
+		buf.putByteS(type);
+		buf.putLEInt(xteas[2]);
+		buf.putInt2(xteas[1]);
+		player.getChannel().write(buf.toPacket());
+	}
+
+	/**
+	 * Sends a fixed-sized configuration key-value pair (8 bits). Known as "Config1" on some servers
+	 * @param id	 The id (key) of the client varp
+	 * @param value The value of the client varp
+	 */
+	public void sendFixedVarp(int id, int value) {
+		//NOTE: The order and encoding methods of this packet vary between client revisions
+		PacketBuf buf = new PacketBuf(FIXED_VARP_PACKET);
+		buf.putLEShortA(id);
+		buf.putByteC(value);
+		player.getChannel().write(buf.toPacket());
+	}
+
+	/**
+	 * Sends a dynamic-sized configuration key-value pair (8-32 bits). Known as "Config2" on some servers
+	 * @param id	 The id (key) of the client varp
+	 * @param value The value of the client varp
+	 */
+	public void sendDynamicVarp(int id, int value) {
+		//NOTE: The order and encoding methods of this packet vary between client revisions
+		PacketBuf buf = new PacketBuf(DYNAMIC_VARP_PACKET);
+		buf.putInt1(value);
+		buf.putLEShortA(id);
+		player.getChannel().write(buf.toPacket());
+	}
+
+	/**
+	 * Sends an config (client varp).
+	 * @param id 	 The varp id.
+	 * @param value The varp value.
+	 */
+	public void sendVarp(int id, int value) {
+		if (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE) {
+			sendDynamicVarp(id, value);
+		} else {
+			sendFixedVarp(id, value);
+		}
+	}
+	
+	/**
+	 * Sends all the friends currently on a player's friends list (used for friends list initialisation
+	 * @param friends A list containing all the friends on the player's friends list
+	 */
+	public void sendFriends (List<Friend> friends) {
+		PacketBuf buf = new PacketBuf(FRIENDS_PACKET);
+		for (Friend f : friends) {
+			packFriend(f, false, buf);
+		}
+		player.getChannel().write(buf.toPacket());
+	}
+	
+	/**
+	 * Sends an individual friend to the player. This could be either an update to a friend's details or a friend addition
+	 * @param friend 		The details for the specified friend
+	 * @param isNameChange	Whether or not this is a notification of a friend changing their name.
+	 */
+	public void sendFriend (Friend friend, boolean isNameChange) {
+		PacketBuf buf = new PacketBuf(FRIENDS_PACKET);
+		packFriend(friend, isNameChange, buf);
+		player.getChannel().write(buf.toPacket());
+	}	
+	
+	/**
+	 * Writes the friend details to the specified packet
+	 * @param friend		The friend object from which to fetch details
+	 * @param isNameChange	Whether the request represents a name change
+	 * @param packet		The packet in which to write the friend details
+	 */
+	public void packFriend(Friend friend, boolean isNameChange, PacketBuf packet) {
+		World world = friend.getWorld();
+		boolean putOnline = (world != null);
+		int flags = 0;
+		/*if (friend.isRecruited()) {
+			flags |= 0x1;
+		}*/
+		if (friend.isReferred()) {
+			flags |= 0x2;
+		}
+		
+		packet.put(isNameChange ? 0 : 1);//Is this a notification of a friend name change
+		packet.putString(friend.getName());//Current display name
+		packet.putString(friend.getPrevName() == null ? "" : friend.getPrevName());//Previous display name, or empty string if null
+		packet.putShort(putOnline ? world.getNodeId() : 0);//NodeID (world ID) of friend, or 0 if offline
+		packet.put(friend.getFcRank());//Rank in player's friends chat
+		packet.put(flags);//Flags (0x2=referred, 0x1=recruited)
+		if (putOnline) {
+			packet.putString(world.getName());//Friend world name
+			packet.put(0);//This always seems to be zero. Possibly physical server location? More info is needed.
+			packet.putInt(world.getFlags());//Friend server flags
+		}
+		packet.putString(friend.getNote());//Note
+	}
+	
+	/**
 	 * Sends the default login data.
 	 */
 	public void sendLogin() {
 		sendMapRegion();
-		sendWindowPane(548);
+		sendWindowPane(548, 0);
 		sendGameScreen();
 		sendPlayerConfig();
 		sendMessage("Welcome to Ieldor.");
@@ -161,18 +303,6 @@ public class ActionSender {
 		buf.putShortA(player.getPosition().getLocalY());
 		player.getChannel().write(buf.toPacket());
 	}
-	
-	/**
-	 * Sends an window pane.
-	 * @param paneId The id of the window pane.
-	 */
-	private void sendWindowPane(int paneId) {
-		PacketBuf buf = new PacketBuf(145);
-		buf.putLEShortA(paneId);
-		buf.putByteA(0);
-		buf.putLEShortA(interfaceCount++);
-		player.getChannel().write(buf.toPacket());
-	}
 
 	/**
 	 * Sends the logout to the game screen.
@@ -255,43 +385,6 @@ public class ActionSender {
 	public void sendEnergy() {
 		PacketBuf buf = new PacketBuf(234);
 		buf.put(player.getRunEnergy());
-		player.getChannel().write(buf.toPacket());
-	}
-
-	/**
-	 * Sends an config.
-	 * @param id The config id.
-	 * @param value The config value.
-	 */
-	public void sendConfig(int id, int value) {
-		if(value < 128 && value > -128) {
-			sendConfig1(id, value);
-		} else {
-			sendConfig2(id, value);
-		}		
-	}
-
-	/**
-	 * Sends an config.
-	 * @param id The config id.
-	 * @param value The config value.
-	 */
-	private void sendConfig1(int id, int value) {
-		PacketBuf buf = new PacketBuf(60);
-		buf.putShortA(id);
-		buf.putByteC(value);
-		player.getChannel().write(buf.toPacket());
-	}
-	
-	/**
-	 * Sends an config.
-	 * @param id The config id.
-	 * @param value The config value.
-	 */
-	public void sendConfig2(int id, int value) {
-		PacketBuf buf = new PacketBuf(226);
-		buf.putInt(value);
-		buf.putShortA(id);
 		player.getChannel().write(buf.toPacket());
 	}
 	
