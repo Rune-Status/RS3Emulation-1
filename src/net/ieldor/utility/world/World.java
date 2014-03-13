@@ -9,18 +9,23 @@ public final class World {
 	public static final int FLAG_HIGHLIGHT  = 0x10;
 
 	private final int id, flags, country;
-	private final String activity, ip;
+	private final String activity, ip, name;
 
-	public World(int id, int flags, int country, String activity, String ip) {
+	public World(int id, String name, int flags, int country, String activity, String ip) {
 		this.id = id;
+		this.name = name;
 		this.flags = flags;
 		this.country = country;
 		this.activity = activity;
 		this.ip = ip;
 	}
 
-	public int getId() {
+	public int getNodeId() {
 		return id;
+	}
+	
+	public String getName () {
+		return name;
 	}
 
 	public int getFlags() {

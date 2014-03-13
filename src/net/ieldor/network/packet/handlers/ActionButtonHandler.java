@@ -49,19 +49,19 @@ public class ActionButtonHandler implements PacketHandler<ActionButtonContext> {
 		case 750:
 			if(!player.isRunning()) {
 				player.setRunning(true);
-				player.getActionSender().sendConfig(173, 1);
+				player.getActionSender().sendVarp(173, 1);
 			} else {
 				player.setRunning(false);
-				player.getActionSender().sendConfig(173, 0);
+				player.getActionSender().sendVarp(173, 0);
 			}
 			break;
 		case 261:
 			if(!player.isRunning()) {
 				player.setRunning(true);
-				player.getActionSender().sendConfig(173, 1);
+				player.getActionSender().sendVarp(173, 1);
 			} else {
 				player.setRunning(false);
-				player.getActionSender().sendConfig(173, 0);
+				player.getActionSender().sendVarp(173, 0);
 			}
 			break;
 			case 320: 
@@ -69,7 +69,7 @@ public class ActionButtonHandler implements PacketHandler<ActionButtonContext> {
 				for (int buttonId = 125; buttonId < 149; buttonId++) {
 					if (context.getButtonId() == buttonId) {
 						player.getActionSender().sendInterface(499);
-						player.getActionSender().sendConfig2(965, Constants.MENU_ID[skillIndex]);
+						player.getActionSender().sendDynamicVarp(965, Constants.MENU_ID[skillIndex]);
 						this.currentSkillIndex = Constants.MENU_ID[skillIndex];
 						break;
 					}
@@ -77,7 +77,7 @@ public class ActionButtonHandler implements PacketHandler<ActionButtonContext> {
 				}
 				break;
 			case 499:
-				player.getActionSender().sendConfig2(965, Constants.SUB_CONFIG[context.getButtonId() - 10] + currentSkillIndex);
+				player.getActionSender().sendDynamicVarp(965, Constants.SUB_CONFIG[context.getButtonId() - 10] + currentSkillIndex);
 				break;
 		}
 	}
