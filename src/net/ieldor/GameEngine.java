@@ -21,7 +21,7 @@ import net.ieldor.network.packet.PacketCodec;
 /**
  * The engine for the actual game server.
  *
- * @author Thomas Le Godais <thomaslegodais@live.com>
+ * @author Kyle
  *
  */
 public class GameEngine {
