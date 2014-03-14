@@ -16,18 +16,22 @@
  */
 package net.ieldor.game.model.player;
 
-import java.util.logging.Logger;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+
+import java.util.logging.Logger;
+
+import net.ieldor.Constants;
 import net.ieldor.Main;
 import net.ieldor.game.model.Entity;
 import net.ieldor.game.model.Position;
+import net.ieldor.game.social.FriendManager;
 import net.ieldor.network.ActionSender;
 import net.ieldor.network.ServerChannelAdapterHandler;
 import net.ieldor.network.codec.buf.PacketBufDecoder;
 import net.ieldor.network.codec.buf.PacketBufEncoder;
 import net.ieldor.network.session.impl.GameSession;
+import net.ieldor.utility.NameManager.DisplayName;
 
 /**
  * Represents an {@link Entity} that is controlled by a physical human being.
@@ -62,6 +66,8 @@ public class Player extends Entity {
 	 */
 	private Appearance appearance = new Appearance();
 	
+	private FriendManager friendManager = new FriendManager(this);
+	
 	
 	/**
 	 * Constructs a new {@code Player} instance.
@@ -76,6 +82,33 @@ public class Player extends Entity {
 		this.password = password;
 	}
 	
+	public void initDisplayName () {
+		DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(username);
+		if (nameData != null) {
+			setDisplayName(nameData.getDisplayName(), nameData.getPrevName());
+		} else {
+			setDisplayName(username, "");
+		}
+	}
+	
+	public void lobbyLogin (ChannelHandlerContext channelHandlerContext) {
+		channel.pipeline().addFirst(new PacketBufEncoder(), new PacketBufDecoder());
+		GameSession gameSession = new GameSession(channelHandlerContext, this);
+		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
+		Logger.getAnonymousLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
+		sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
+		getActionSender().sendWindowPane(906, 0);//Sends the lobby pane
+	}
+	
+	public void sendLobbyConfigs (int[] configs) {
+		for (int i = 0; i < configs.length; i++) {
+			int val = configs[i];
+			if (val != 0) {
+				getActionSender().sendVarp(i, val);
+			}
+		}
+	}
+	
 	/**
 	 * @param returnCode
 	 * @param channelHandlerContext The channel handler context.
@@ -85,6 +118,7 @@ public class Player extends Entity {
 
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
+		
 			
 		if(returnCode == 2) { 
 			Logger.getAnonymousLogger().info("Successfully registered player into world [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
@@ -92,9 +126,9 @@ public class Player extends Entity {
 		}
 	}
 	
-	public void initDisplayName (String name, String prevName) {
-		prevDisplayName = prevName;
-		displayName = name;
+	public void setDisplayName (String displayName, String prevName) {
+		this.prevDisplayName = prevName;
+		this.displayName = displayName;
 	}
 	
 	public void changeDisplayName (String newName) {
@@ -147,6 +181,14 @@ public class Player extends Entity {
 	 */
 	public ActionSender getActionSender() {
 		return actionSender;
+	}
+	
+	/**
+	 * Gets the friend management tools for this player
+	 * @return The friend manager
+	 */
+	public FriendManager getFriendManager () {
+		return friendManager;
 	}
 
 	/**

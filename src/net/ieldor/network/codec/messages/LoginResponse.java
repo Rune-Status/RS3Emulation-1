@@ -16,6 +16,9 @@
  */
 package net.ieldor.network.codec.messages;
 
+import io.netty.buffer.ByteBuf;
+import net.ieldor.io.Packet;
+
 /**
  * An response sent from the {@link LoginSession}.
  *
@@ -57,10 +60,12 @@ public class LoginResponse {
 	 */
 	private int returnCode;
 	
-	private byte[] payload;
+	private ByteBuf payload;
+	
+	private int packetSize;
 	
 	public LoginResponse(int returnCode) {
-		this(returnCode, null);
+		this(returnCode, null, 0);
 	}
 	
 	/**
@@ -70,9 +75,10 @@ public class LoginResponse {
 	 * @param index The index.
 	 * @param displayName The displayname.
 	 */
-	public LoginResponse(int returnCode, byte[] payload) {
+	public LoginResponse(int returnCode, ByteBuf payload, int payloadSize) {
 		this.returnCode = returnCode;
 		this.payload = payload;
+		this.packetSize = payloadSize;
 	}
 
 	/**
@@ -87,7 +93,7 @@ public class LoginResponse {
 	 * Gets the payload for the response packet.
 	 * @return the payload
 	 */
-	public byte[] getPayload() {
+	public ByteBuf getPayload() {
 		return payload;
 	}
 
@@ -96,7 +102,7 @@ public class LoginResponse {
 	 * @return the payload size
 	 */
 	public int getPayloadSize() {
-		return payload.length;
+		return packetSize;
 	}
 	
 	/**

@@ -499,6 +499,17 @@ public final class PacketBuf {
 	}
 	
 	/**
+	 * Puts a 5-byte integer.
+	 * @param val The value.
+	 * @return The PacketBuf instance, for chaining.
+	 */
+	public PacketBuf put5ByteInteger(long value) {
+		put((int) (value >> 32));
+		putInt((int) (value & 0xffffffff));
+		return this;
+	}
+	
+	/**
 	 * Switches the access mode to BIT_ACCESS
 	 */
 	public void switchToBitAccess() {

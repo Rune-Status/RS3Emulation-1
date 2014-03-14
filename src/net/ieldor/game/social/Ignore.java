@@ -17,16 +17,24 @@
 package net.ieldor.game.social;
 
 public class Ignore {
-	private String currentName;
-	private String previousName;
+	public final String username;
+	private String currentName = "";
+	private String previousName = "";
 	private String note;
 	
-	public Ignore (String currentName, String previousName, String note) {
-		this.currentName = currentName;
-		this.previousName = previousName;
+	public Ignore (String username) {
+		this(username, "");
+	}
+	
+	public Ignore (String username, String note) {
+		this.username = username;
 		this.note = note;
 	}
 	
+	public void setDisplayNames (String current, String previous) {
+		this.currentName = current;
+		this.previousName = previous;
+	}	
 	
 	public String getName () {
 		return currentName;
