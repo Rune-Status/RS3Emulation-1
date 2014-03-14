@@ -18,10 +18,12 @@ package net.ieldor.network;
 
 import java.util.List;
 
-import net.ieldor.game.chat.Friend;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import net.ieldor.game.model.player.Player;
+import net.ieldor.game.social.Friend;
+import net.ieldor.game.social.Ignore;
+import net.ieldor.game.social.OnlineStatus;
 import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
 import net.ieldor.utility.BinaryLandscapeHandler;
@@ -42,11 +44,11 @@ public class ActionSender {
 	private static final int FIXED_VARP_PACKET = 105;
 	
 	private static final int UNLOCK_FRIENDS_LIST = 18;
+	private static final int ONLINE_STATUS_PACKET = 47;
 	private static final int FRIENDS_PACKET = 2;	
 	private static final int IGNORES_PACKET = 14;
 	private static final int FRIENDS_CHANNEL_PACKET = 82;
 	private static final int CLAN_CHANNEL_PACKET = 73;
-	private static final int ONLINE_STATUS_PACKET = 47;
 	
 	private static final int WINDOW_PANE_PACKET = 68;
 	private static final int WORLD_LIST_PACKET = 51;
@@ -139,6 +141,25 @@ public class ActionSender {
 	}
 	
 	/**
+	 * Notifies the client of the player's current online status
+	 * @param status The player's online status
+	 */
+	public void sendOnlineStatus(OnlineStatus status) {
+		PacketBuf buf = new PacketBuf(ONLINE_STATUS_PACKET);
+		buf.put(status.getCode());
+		player.getChannel().write(buf.toPacket());
+	}
+	
+	/**
+	 * Sends a packet notifying the client that the friends server is being connected to.
+	 * Changes friends list message from "Loading Friends List." to "Connecting to Friend Server."
+	 */
+	public void sendUnlockFriendsList () {
+		PacketBuf buf = new PacketBuf(UNLOCK_FRIENDS_LIST);
+		player.getChannel().write(buf.toPacket());
+	}
+	
+	/**
 	 * Sends all the friends currently on a player's friends list (used for friends list initialisation
 	 * @param friends A list containing all the friends on the player's friends list
 	 */
@@ -193,6 +214,42 @@ public class ActionSender {
 	}
 	
 	/**
+	 * Sends all the ignores currently on a player's ignore list. Used for initialising the ignore list
+	 * @param ignores A list containing all the ignores on the player's ignore list
+	 */
+	public void sendIgnores(List<Ignore> ignores) {
+		PacketBuf buf = new PacketBuf(IGNORES_PACKET);
+		for (Ignore i : ignores) {
+			packIgnore(i, false, buf);
+		}
+		player.getChannel().write(buf.toPacket());			
+	}
+	
+	/**
+	 * Sends an individual ignore to the player. This could either be a new ignore or an update to an existing ignore
+	 * @param ignore		The details for the specified ignore
+	 * @param isNameChange Whether this notification represents a name change
+	 */
+	public void sendIgnore(Ignore ignore, boolean isNameChange) {
+		PacketBuf buf = new PacketBuf(IGNORES_PACKET);
+		packIgnore(ignore, isNameChange, buf);
+		player.getChannel().write(buf.toPacket());		
+	}
+	
+	/**
+	 * Writes the ignore details to the specified packet buffer
+	 * @param ignore		The ignore object from which to fetch details
+	 * @param isNameChange Whether the request represents a name change
+	 * @param packet		The packet into which to write the ignore details
+	 */
+	public void packIgnore(Ignore ignore, boolean isNameChange, PacketBuf packet) {
+		packet.put((isNameChange ? 1 : 0));
+		packet.putString(ignore.getName());
+		packet.putString(ignore.getPreviousName());
+		packet.putString(ignore.getNote());
+	}
+	
+	/**
 	 * Sends the default login data.
 	 */
 	public void sendLogin() {
@@ -209,7 +266,7 @@ public class ActionSender {
 	 */
 	private void sendPlayerConfig() {		
 		this.sendEnergy();
-		this.sendFriendsStatus();
+		this.sendOnlineStatus(OnlineStatus.NOBODY);
 	}
 
 	/**
@@ -385,15 +442,6 @@ public class ActionSender {
 	public void sendEnergy() {
 		PacketBuf buf = new PacketBuf(234);
 		buf.put(player.getRunEnergy());
-		player.getChannel().write(buf.toPacket());
-	}
-	
-	/**
-	 * Sends the friend status.
-	 */
-	public void sendFriendsStatus() {
-		PacketBuf buf = new PacketBuf(197);
-		buf.put(2);
 		player.getChannel().write(buf.toPacket());
 	}
 	
