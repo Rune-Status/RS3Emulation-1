@@ -19,19 +19,39 @@ package net.ieldor.game.social;
 import net.ieldor.utility.world.World;
 
 public class Friend {
+	public final String username;
 	private String currentName;
 	private String previousName;
 	private World currentWorld = null;
 	private int friendsChatRank = 0;
 	private boolean isReferred = false;
-	private String note;
+	private String note = "";
 	
-	public Friend (String currentName, String previousName, World world, int rank, boolean referred, String note) {
-		this.currentName = currentName;
-		this.previousName = previousName;
-		this.currentWorld = world;
-		this.friendsChatRank = rank;
+	public Friend (String username, boolean referred) {
+		this(username, referred, 0, "");
+	}
+	
+	public Friend (String username, boolean referred, int fcRank, String note) {
+		this.username = username;
 		this.isReferred = referred;
+		this.friendsChatRank = fcRank;
+		this.note = note;
+	}
+	
+	public void setDisplayNames (String current, String previous) {
+		this.currentName = current;
+		this.previousName = previous;
+	}
+	
+	public void setWorld (World world) {
+		this.currentWorld = world;
+	}
+	
+	protected void setFcRank (int rank) {
+		this.friendsChatRank = rank;
+	}
+	
+	protected void setNote (String note) {
 		this.note = note;
 	}
 	

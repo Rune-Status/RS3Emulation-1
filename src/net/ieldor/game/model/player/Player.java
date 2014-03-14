@@ -23,11 +23,13 @@ import io.netty.channel.ChannelHandlerContext;
 import net.ieldor.Main;
 import net.ieldor.game.model.Entity;
 import net.ieldor.game.model.Position;
+import net.ieldor.game.social.FriendManager;
 import net.ieldor.network.ActionSender;
 import net.ieldor.network.ServerChannelAdapterHandler;
 import net.ieldor.network.codec.buf.PacketBufDecoder;
 import net.ieldor.network.codec.buf.PacketBufEncoder;
 import net.ieldor.network.session.impl.GameSession;
+import net.ieldor.utility.NameManager.DisplayName;
 
 /**
  * Represents an {@link Entity} that is controlled by a physical human being.
@@ -62,6 +64,8 @@ public class Player extends Entity {
 	 */
 	private Appearance appearance = new Appearance();
 	
+	private FriendManager friendManager = new FriendManager(this);
+	
 	
 	/**
 	 * Constructs a new {@code Player} instance.
@@ -85,6 +89,13 @@ public class Player extends Entity {
 
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
+		
+		DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(username);
+		if (nameData != null) {
+			initDisplayName(nameData.getDisplayName(), nameData.getPrevName());
+		} else {
+			initDisplayName(username, "");
+		}
 			
 		if(returnCode == 2) { 
 			Logger.getAnonymousLogger().info("Successfully registered player into world [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
@@ -92,9 +103,9 @@ public class Player extends Entity {
 		}
 	}
 	
-	public void initDisplayName (String name, String prevName) {
+	public void initDisplayName (String displayName, String prevName) {
 		prevDisplayName = prevName;
-		displayName = name;
+		displayName = displayName;
 	}
 	
 	public void changeDisplayName (String newName) {
@@ -147,6 +158,14 @@ public class Player extends Entity {
 	 */
 	public ActionSender getActionSender() {
 		return actionSender;
+	}
+	
+	/**
+	 * Gets the friend management tools for this player
+	 * @return The friend manager
+	 */
+	public FriendManager getFriendManager () {
+		return friendManager;
 	}
 
 	/**

@@ -38,6 +38,7 @@ import net.ieldor.game.service.ServiceManager;
 import net.ieldor.network.ChannelChildHandler;
 import net.ieldor.ondemand.UpdateService;
 import net.ieldor.utility.CharacterRepository;
+import net.ieldor.utility.NameManager;
 
 /**
  * RS3Emulation
@@ -76,7 +77,11 @@ public class Main {
 	 * The checksum table instance.
 	 */
 	private ByteBuffer checksumTable;
-
+	
+	/**
+	 * The name management service, used for managing player display names
+	 */
+	private static NameManager nameManager;
 
 	/**
 	 * The {@link CharacterRepository} for storing players.
@@ -149,6 +154,9 @@ public class Main {
 		Container container = new Container(Container.COMPRESSION_NONE, cache.createChecksumTable().encode(true, Constants.JS5ModulusKey, Constants.JS5PrivateKey));
 		checksumTable = container.encode();
 		serviceManager.startAll();
+		
+		nameManager = new NameManager();
+		nameManager.init();
 	}
 
 
@@ -185,5 +193,14 @@ public class Main {
 	 */
 	public ByteBuffer getChecksumTable() {
 		return checksumTable;
+	}
+	
+	/**
+	 * Gets the name manager.
+	 * 
+	 * @return the name manager
+	 */
+	public static NameManager getNameManager () {
+		return nameManager;
 	}
 }

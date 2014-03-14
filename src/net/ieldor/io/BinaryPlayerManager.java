@@ -93,6 +93,8 @@ public class BinaryPlayerManager {
 		int y = inputStream.readUnsignedShort();
 		int height = inputStream.readUnsignedShort();
 		
+		Player player = new Player(message.getContext().channel(), message.getUsername(), message.getPassword(), new Position(x, y, height));
+		
 		int gender = inputStream.readByte();
 		
 		int[] style = new int[7];
@@ -104,7 +106,8 @@ public class BinaryPlayerManager {
 			colour[i] = inputStream.readByte();
 		}		
 		
-		Player player = new Player(message.getContext().channel(), message.getUsername(), message.getPassword(), new Position(x, y, height));
+		player.getFriendManager().deserialise(inputStream, version);//Deserialises the friends/ignores for the player
+		
 		player.initDisplayName(displayName, prevDisplayName);
 		player.getAppearance().setGender(gender);
 		player.getAppearance().setLooks(style);
@@ -140,8 +143,11 @@ public class BinaryPlayerManager {
 			outputStream.writeByte(style[i]);
 		
 		int[] colour = player.getAppearance().getColours();
-		for(int i = 0; i < colour.length; i++)
+		for(int i = 0; i < colour.length; i++) {
 			outputStream.writeByte(colour[i]);
+		}
+		
+		player.getFriendManager().serialise(outputStream);//Saves the friends/ignores for the player
 		
 		outputStream.flush();
 	}
