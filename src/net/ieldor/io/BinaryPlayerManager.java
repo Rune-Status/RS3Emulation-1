@@ -29,6 +29,7 @@ import net.ieldor.game.model.Position;
 import net.ieldor.game.model.player.LoadResult;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.network.codec.messages.LoginHandshakeMessage;
+import net.ieldor.network.codec.messages.LoginResponse;
 import net.ieldor.utility.Base37Utils;
 
 /**
@@ -42,17 +43,17 @@ public class BinaryPlayerManager {
 	/**
 	 * The player has an invalid password.
 	 */
-    public static final byte INVALID_PASSWORD = 3;
+    //public static final byte INVALID_PASSWORD = 3;
     
     /**
      * The player is already online.
      */
-    public static final byte ALREADY_ONLINE = 5;
+    //public static final byte ALREADY_ONLINE = 5;
 
     /**
      * The player has a successful login.
      */
-	private static final int STATUS_OKAY = 2;
+	//private static final int STATUS_OKAY = 2;
 
 	/**
 	 * The default spawn position.
@@ -73,8 +74,9 @@ public class BinaryPlayerManager {
 	 */
 	public static LoadResult loadPlayer(LoginHandshakeMessage message) throws IOException {
 		File file = BinaryPlayerUtil.getFile(message.getUsername());
-		if(!file.exists())
-			return new LoadResult(new Player(message.getContext().channel(), message.getUsername(), message.getPassword(), SPAWN_POSITION), STATUS_OKAY);
+		if(!file.exists()) {
+			return new LoadResult(new Player(message.getContext().channel(), message.getUsername(), message.getPassword(), SPAWN_POSITION), LoginResponse.SUCCESS);
+		}
 		
 		DataInputStream inputStream = new DataInputStream(new FileInputStream(file));
 		
@@ -83,8 +85,9 @@ public class BinaryPlayerManager {
 		String username = StreamUtil.readString(inputStream);
 		String password = StreamUtil.readString(inputStream);
 		
-		if(!username.equalsIgnoreCase(message.getUsername()) || !password.equalsIgnoreCase(message.getPassword()))
-			return new LoadResult(null, INVALID_PASSWORD);
+		if(!username.equalsIgnoreCase(message.getUsername()) || !password.equalsIgnoreCase(message.getPassword())) {
+			return new LoadResult(null, LoginResponse.INVALID_UN_PWD);
+		}
 		
 		String displayName = StreamUtil.readString(inputStream);
 		String prevDisplayName = StreamUtil.readString(inputStream);
@@ -108,12 +111,11 @@ public class BinaryPlayerManager {
 		
 		player.getFriendManager().deserialise(inputStream, version);//Deserialises the friends/ignores for the player
 		
-		player.initDisplayName(displayName, prevDisplayName);
 		player.getAppearance().setGender(gender);
 		player.getAppearance().setLooks(style);
 		player.getAppearance().setColours(colour);
 		
-		return new LoadResult(player, STATUS_OKAY);
+		return new LoadResult(player, LoginResponse.SUCCESS);
 	}
 
 	/**

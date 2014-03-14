@@ -27,9 +27,7 @@ import java.security.SecureRandom;
 
 import net.ieldor.Constants;
 import net.ieldor.network.codec.login.LoginPayload.LoginType;
-import net.ieldor.network.codec.messages.LoginHandshakeMessage;
 import net.ieldor.network.codec.messages.LoginResponse;
-import net.ieldor.utility.Base37Utils;
 import net.ieldor.utility.ByteBufUtils;
 
 /**
@@ -44,7 +42,7 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 	 * An enumeration used for storing the possible states of login.
 	 */
 	public enum LoginState {
-		DECODE_HEADER, CONNECTION_TYPE, CLIENT_DETAILS, LOBBY_PAYLOAD, GAME_PAYLOAD
+		DECODE_HEADER, CONNECTION_TYPE, CLIENT_DETAILS, LOBBY_PAYLOAD
 	};
 
 	/**
@@ -164,8 +162,9 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 	}
 
 	private Object decodeClientDetails(ByteBuf buffer) throws ProtocolException {
-		if (buffer.readableBytes() < loginSize) {
-			throw new ProtocolException("Invalid login size.");
+		if (buffer.readableBytes() < loginSize) {	
+			return null;
+			//throw new ProtocolException("Invalid login size. Expected: "+loginSize+", found="+buffer.readableBytes());
 		}
 
 		int version = buffer.readInt();
@@ -173,6 +172,7 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 
 		if (version != Constants.ServerRevision
 				&& subVersion != Constants.ServerSubRevision) {
+			return new LoginResponse(LoginResponse.GAME_UPDATED);
 			// throw new
 			// ProtocolException("Invalid client version/sub-version.");
 		}
@@ -192,9 +192,9 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 	private Object decodeConnectionType(ByteBuf buffer) {
 		int loginType = buffer.readUnsignedByte();
 		if (loginType != 16 && loginType != 18 && loginType != 19) {
+			System.out.println("Invalid login opcode: " + loginType);
 			return new LoginResponse(LoginResponse.BAD_LOGIN_PACKET);
-			// throw new ProtocolException("Invalid login opcode: " +
-			// loginType);
+			// throw new ProtocolException("Invalid login opcode: " + loginType);
 		}
 
 		currentLoginType = loginType == 19 ? LoginType.LOBBY : LoginType.GAME;

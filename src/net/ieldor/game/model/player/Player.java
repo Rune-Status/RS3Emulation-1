@@ -16,10 +16,12 @@
  */
 package net.ieldor.game.model.player;
 
-import java.util.logging.Logger;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+
+import java.util.logging.Logger;
+
+import net.ieldor.Constants;
 import net.ieldor.Main;
 import net.ieldor.game.model.Entity;
 import net.ieldor.game.model.Position;
@@ -80,6 +82,33 @@ public class Player extends Entity {
 		this.password = password;
 	}
 	
+	public void initDisplayName () {
+		DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(username);
+		if (nameData != null) {
+			setDisplayName(nameData.getDisplayName(), nameData.getPrevName());
+		} else {
+			setDisplayName(username, "");
+		}
+	}
+	
+	public void lobbyLogin (ChannelHandlerContext channelHandlerContext) {
+		channel.pipeline().addFirst(new PacketBufEncoder(), new PacketBufDecoder());
+		GameSession gameSession = new GameSession(channelHandlerContext, this);
+		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
+		Logger.getAnonymousLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
+		sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
+		getActionSender().sendWindowPane(906, 0);//Sends the lobby pane
+	}
+	
+	public void sendLobbyConfigs (int[] configs) {
+		for (int i = 0; i < configs.length; i++) {
+			int val = configs[i];
+			if (val != 0) {
+				getActionSender().sendVarp(i, val);
+			}
+		}
+	}
+	
 	/**
 	 * @param returnCode
 	 * @param channelHandlerContext The channel handler context.
@@ -90,12 +119,6 @@ public class Player extends Entity {
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
 		
-		DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(username);
-		if (nameData != null) {
-			initDisplayName(nameData.getDisplayName(), nameData.getPrevName());
-		} else {
-			initDisplayName(username, "");
-		}
 			
 		if(returnCode == 2) { 
 			Logger.getAnonymousLogger().info("Successfully registered player into world [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
@@ -103,9 +126,9 @@ public class Player extends Entity {
 		}
 	}
 	
-	public void initDisplayName (String displayName, String prevName) {
-		prevDisplayName = prevName;
-		displayName = displayName;
+	public void setDisplayName (String displayName, String prevName) {
+		this.prevDisplayName = prevName;
+		this.displayName = displayName;
 	}
 	
 	public void changeDisplayName (String newName) {

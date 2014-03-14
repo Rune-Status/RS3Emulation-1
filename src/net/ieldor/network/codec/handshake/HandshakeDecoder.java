@@ -19,6 +19,7 @@ package net.ieldor.network.codec.handshake;
 import net.ieldor.network.codec.login.LoginDecoder;
 import net.ieldor.network.codec.login.LoginEncoder;
 import net.ieldor.network.codec.messages.HandshakeMessage;
+import net.ieldor.network.codec.messages.LoginResponse;
 import net.ieldor.network.codec.update.UpdateDecoder;
 import net.ieldor.network.codec.update.UpdateEncoder;
 import net.ieldor.network.codec.update.UpdateStatusEncoder;
@@ -61,6 +62,7 @@ public class HandshakeDecoder extends ChannelInboundByteHandlerAdapter  {
 			break;
 		case HANDSHAKE_LOGIN:
 			ctx.pipeline().addFirst(new LoginEncoder(), new LoginDecoder());
+			ctx.write(new LoginResponse(0));
 			break;
 		default:
 			break;

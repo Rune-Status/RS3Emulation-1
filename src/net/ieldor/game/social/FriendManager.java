@@ -42,7 +42,7 @@ public class FriendManager {
 		this.player = player;
 	}
 	
-	public void initPlayer () {
+	public void initFriends () {
 		for (Friend f : friends) {
 			DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(f.username);
 			f.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());

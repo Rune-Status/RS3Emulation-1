@@ -39,9 +39,9 @@ import net.ieldor.utility.world.World;
 public class ActionSender {
 	
 	//TODO: Update packet opcodes to the required revision
-	private static final int KEEP_ALIVE_PACKET = 54;
-	private static final int DYNAMIC_VARP_PACKET = 9;
-	private static final int FIXED_VARP_PACKET = 105;
+	private static final int KEEP_ALIVE_PACKET = 110;
+	private static final int DYNAMIC_VARP_PACKET = 2;
+	private static final int FIXED_VARP_PACKET = 156;
 	
 	private static final int UNLOCK_FRIENDS_LIST = 18;
 	private static final int ONLINE_STATUS_PACKET = 47;

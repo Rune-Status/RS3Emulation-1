@@ -115,7 +115,7 @@ public class NameManager {
 		try {
 			outputStream = new DataOutputStream(new FileOutputStream(DISPLAY_NAME_FILE_LOC));
 			synchronized (this) {
-				outputStream.write(displayNameCache.size());
+				outputStream.writeInt(playerDisplayNames.size());
 				for (DisplayName nameInfo : playerDisplayNames) {
 					StreamUtil.writeString(outputStream, nameInfo.username);
 					StreamUtil.writeString(outputStream, nameInfo.displayName);
