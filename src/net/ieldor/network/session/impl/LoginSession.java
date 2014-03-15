@@ -108,7 +108,7 @@ public class LoginSession extends Session {
 		}
 
 		String password = ByteBufUtils.readString(secureBuffer);
-
+		System.out.println("Found password: "+password);
 		long[] loginSeeds = new long[2];
 		for (int seed = 0; seed < loginSeeds.length; seed++) {
 			loginSeeds[seed] = secureBuffer.readLong();
@@ -124,7 +124,7 @@ public class LoginSession extends Session {
 		boolean decodeAsString = xteaBuffer.readByte() == 1;
 		String username = decodeAsString ? xteaBuffer.readString()
 				: Base37Utils.decodeBase37(xteaBuffer.readLong());
-
+		System.out.println("Found username: "+username);
 		@SuppressWarnings("unused")
 		int gameType = xteaBuffer.readUnsignedByte();
 		@SuppressWarnings("unused")
@@ -169,6 +169,7 @@ public class LoginSession extends Session {
 
 		String serverToken = xteaBuffer.readString();
 		if (!serverToken.equals(Constants.SERVER_TOKEN)) {
+			System.out.println("Expected token: "+Constants.SERVER_TOKEN+", found: "+serverToken);
 			channel.write(new LoginResponse(LoginResponse.BAD_SESSION));
 			return;
 		}
