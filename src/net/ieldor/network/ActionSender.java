@@ -170,7 +170,7 @@ public class ActionSender {
 	 * @param friends A list containing all the friends on the player's friends list
 	 */
 	public void sendFriends (List<Friend> friends) {
-		PacketBuf buf = new PacketBuf(FRIENDS_PACKET);
+		PacketBuf buf = new PacketBuf(FRIENDS_PACKET, PacketType.SHORT);
 		for (Friend f : friends) {
 			packFriend(f, false, buf);
 		}
@@ -183,7 +183,7 @@ public class ActionSender {
 	 * @param isNameChange	Whether or not this is a notification of a friend changing their name.
 	 */
 	public void sendFriend (Friend friend, boolean isNameChange) {
-		PacketBuf buf = new PacketBuf(FRIENDS_PACKET);
+		PacketBuf buf = new PacketBuf(FRIENDS_PACKET, PacketType.SHORT);
 		packFriend(friend, isNameChange, buf);
 		player.getChannel().write(buf.toPacket());
 	}	
@@ -224,7 +224,7 @@ public class ActionSender {
 	 * @param ignores A list containing all the ignores on the player's ignore list
 	 */
 	public void sendIgnores(List<Ignore> ignores) {
-		PacketBuf buf = new PacketBuf(IGNORES_PACKET);
+		PacketBuf buf = new PacketBuf(IGNORES_PACKET, PacketType.SHORT);
 		for (Ignore i : ignores) {
 			packIgnore(i, false, buf);
 		}
@@ -237,7 +237,7 @@ public class ActionSender {
 	 * @param isNameChange Whether this notification represents a name change
 	 */
 	public void sendIgnore(Ignore ignore, boolean isNameChange) {
-		PacketBuf buf = new PacketBuf(IGNORES_PACKET);
+		PacketBuf buf = new PacketBuf(IGNORES_PACKET, PacketType.SHORT);
 		packIgnore(ignore, isNameChange, buf);
 		player.getChannel().write(buf.toPacket());		
 	}
