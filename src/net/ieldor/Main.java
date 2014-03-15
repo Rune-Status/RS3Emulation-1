@@ -35,10 +35,10 @@ import net.ieldor.cache.Container;
 import net.ieldor.cache.FileStore;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.service.ServiceManager;
+import net.ieldor.modules.login.NameManager;
 import net.ieldor.network.ChannelChildHandler;
 import net.ieldor.ondemand.UpdateService;
 import net.ieldor.utility.CharacterRepository;
-import net.ieldor.utility.NameManager;
 
 /**
  * RS3Emulation

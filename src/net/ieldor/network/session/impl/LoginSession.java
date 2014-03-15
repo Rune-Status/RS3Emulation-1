@@ -20,16 +20,18 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
 import net.ieldor.Constants;
 import net.ieldor.game.model.player.LoadResult;
 import net.ieldor.game.model.player.Player;
-import net.ieldor.io.BinaryPlayerManager;
 import net.ieldor.io.InputStream;
 import net.ieldor.io.Packet;
 import net.ieldor.io.PacketBuf;
+import net.ieldor.modules.login.BinaryPlayerManager;
+import net.ieldor.modules.login.MachineData;
 import net.ieldor.network.codec.login.LoginPayload;
 import net.ieldor.network.codec.messages.LoginHandshakeMessage;
 import net.ieldor.network.codec.messages.LoginResponse;
@@ -108,7 +110,7 @@ public class LoginSession extends Session {
 		}
 
 		String password = ByteBufUtils.readString(secureBuffer);
-
+		//System.out.println("Found password: "+password);
 		long[] loginSeeds = new long[2];
 		for (int seed = 0; seed < loginSeeds.length; seed++) {
 			loginSeeds[seed] = secureBuffer.readLong();
@@ -118,13 +120,19 @@ public class LoginSession extends Session {
 		buffer.readBytes(xteaBlock);
 		XTEA xtea = new XTEA(xteaKey);
 		xtea.decrypt(xteaBlock, 0, xteaBlock.length);
-
+		try {
+			FileOutputStream out = new FileOutputStream("test.dat");
+			out.write(xteaBlock);
+			out.close();
+		} catch (IOException e) {
+			
+		}
 		InputStream xteaBuffer = new InputStream(xteaBlock);
 
 		boolean decodeAsString = xteaBuffer.readByte() == 1;
 		String username = decodeAsString ? xteaBuffer.readString()
 				: Base37Utils.decodeBase37(xteaBuffer.readLong());
-
+		//System.out.println("Found username: "+username);
 		@SuppressWarnings("unused")
 		int gameType = xteaBuffer.readUnsignedByte();
 		@SuppressWarnings("unused")
@@ -152,15 +160,14 @@ public class LoginSession extends Session {
 		int[] crcValues = new int[indexFiles];
 
 		for (int i = 0; i < crcValues.length; i++) {
-			crcValues[i] = xteaBuffer.readInt();
+			crcValues[i] = xteaBuffer.readUnsignedByte();
 		}
-
-		int length = xteaBuffer.readUnsignedByte();
-
-		byte[] machineData = new byte[length];
+		@SuppressWarnings("unused")
+		MachineData data = new MachineData(xteaBuffer);
+		/*int length = xteaBuffer.readUnsignedByte();byte[] machineData = new byte[length];
 		for (int data = 0; data < machineData.length; data++) {
 			machineData[data] = (byte) xteaBuffer.readUnsignedByte();
-		}
+		}*/
 
 		xteaBuffer.readInt();// Packet receive count
 		xteaBuffer.readString();// Some param string (empty)
@@ -169,6 +176,7 @@ public class LoginSession extends Session {
 
 		String serverToken = xteaBuffer.readString();
 		if (!serverToken.equals(Constants.SERVER_TOKEN)) {
+			System.out.println("Expected token: "+Constants.SERVER_TOKEN+", found: "+serverToken);
 			channel.write(new LoginResponse(LoginResponse.BAD_SESSION));
 			return;
 		}

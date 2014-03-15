@@ -51,7 +51,13 @@ public class PacketBufEncoder extends MessageToByteEncoder<Packet> {
 			int length = buf.getLength();
 			int finalLength = length + 2 + type.getValue();
 			ByteBuf buffer = Unpooled.buffer(finalLength);
-			buffer.writeByte((opcode) & 0xFF);
+			if (opcode >= 128) {
+				buffer.writeByte((opcode >> 8) + 128);
+				buffer.writeByte(opcode);
+			} else {
+				buffer.writeByte(opcode);
+			}
+			//System.out.println("Sending packet. Opcode="+((opcode) & 0xFF));
 			switch (type) {
 			case BYTE:
 				buffer.writeByte(length);

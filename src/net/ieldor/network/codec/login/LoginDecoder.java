@@ -189,7 +189,7 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 		// return null;
 	}
 
-	private Object decodeConnectionType(ByteBuf buffer) {
+	private Object decodeConnectionType(ByteBuf buffer) throws ProtocolException {
 		int loginType = buffer.readUnsignedByte();
 		if (loginType != 16 && loginType != 18 && loginType != 19) {
 			System.out.println("Invalid login opcode: " + loginType);
@@ -201,7 +201,7 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 		loginSize = buffer.readShort() & 0xFFFF;
 
 		state = LoginState.CLIENT_DETAILS;
-		return null;
+		return decodeClientDetails(buffer);
 	}
 
 	/**

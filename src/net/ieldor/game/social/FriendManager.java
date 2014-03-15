@@ -23,8 +23,8 @@ import java.util.ArrayList;
 
 import net.ieldor.Main;
 import net.ieldor.game.model.player.Player;
-import net.ieldor.io.BinaryPlayerManager.StreamUtil;
-import net.ieldor.utility.NameManager.DisplayName;
+import net.ieldor.modules.login.BinaryPlayerManager.StreamUtil;
+import net.ieldor.modules.login.NameManager.DisplayName;
 
 public class FriendManager {
 	
