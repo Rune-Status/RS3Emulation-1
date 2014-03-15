@@ -26,6 +26,13 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.modules.login.BinaryPlayerManager.StreamUtil;
 import net.ieldor.modules.login.NameManager.DisplayName;
 
+/**
+ * The tools necessary to control a player's friends list, ignore list, and private messaging. 
+ * Also has the tools for managing the player's own friends chat (though the friends chat channel itself is run separately)
+ *
+ * @author Sundays211
+ *
+ */
 public class FriendManager {
 	
 	private Player player;
@@ -44,12 +51,12 @@ public class FriendManager {
 	
 	public void initFriends () {
 		for (Friend f : friends) {
-			DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(f.username);
+			DisplayName nameData = Main.getloginServer().nameManager.getDisplayNamesFromUsername(f.username);
 			f.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());
 			//TODO Add world determining logic
 		}
 		for (Ignore i : ignores) {
-			DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(i.username);
+			DisplayName nameData = Main.getloginServer().nameManager.getDisplayNamesFromUsername(i.username);
 			i.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());
 		}
 		player.getActionSender().sendOnlineStatus(onlineStatus);
@@ -111,7 +118,7 @@ public class FriendManager {
 			return;
 		}
 		
-		DisplayName nameData = Main.getNameManager().getNameObject(displayName);
+		DisplayName nameData = Main.getloginServer().nameManager.getNameObject(displayName);
 		Ignore ignore = null;
 		if (nameData == null) {
 			//Player does not exist. In the main game, this would spring an error. Here, we will allow it.
@@ -142,7 +149,7 @@ public class FriendManager {
 			//TODO add message send (cannot add self)
 			return;
 		}
-		DisplayName nameData = Main.getNameManager().getNameObject(displayName);		
+		DisplayName nameData = Main.getloginServer().nameManager.getNameObject(displayName);		
 		Friend friend = null;
 		if (nameData == null) {
 			//Player does not exist. In the main game, this would spring an error. Here, we will allow it.

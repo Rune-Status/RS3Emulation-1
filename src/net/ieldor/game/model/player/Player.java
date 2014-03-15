@@ -83,7 +83,7 @@ public class Player extends Entity {
 	}
 	
 	public void initDisplayName () {
-		DisplayName nameData = Main.getNameManager().getDisplayNamesFromUsername(username);
+		DisplayName nameData = Main.getloginServer().nameManager.getDisplayNamesFromUsername(username);
 		if (nameData != null) {
 			setDisplayName(nameData.getDisplayName(), nameData.getPrevName());
 		} else {

@@ -16,6 +16,12 @@
  */
 package net.ieldor.game.social;
 
+/**
+ * An {@link Object} that represents a player's ignore
+ *
+ * @author Sundays211
+ *
+ */
 public class Ignore {
 	public final String username;
 	private String currentName = "";

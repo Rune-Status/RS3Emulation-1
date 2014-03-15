@@ -28,8 +28,7 @@ import net.ieldor.network.codec.messages.UpdateStatusMessage;
  * @author Thomas Le Godais <thomaslegodais@live.com>
  * 
  */
-public class UpdateStatusEncoder extends
-		MessageToByteEncoder<UpdateStatusMessage> {
+public class UpdateStatusEncoder extends MessageToByteEncoder<UpdateStatusMessage> {
 
 	/**
 	 * The delta for the update verification.

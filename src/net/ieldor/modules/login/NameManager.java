@@ -31,7 +31,7 @@ import net.ieldor.modules.login.BinaryPlayerManager.StreamUtil;
  * RS3Emulator
  * DisplayNameManager.java
  * 14/03/2014
- * @author Im Frizzy : Kyle Friz : <skype:kfriz1998>
+ * @author Sundays211
  */
 public class NameManager {
 	
@@ -73,6 +73,10 @@ public class NameManager {
 			playerDisplayNames = new ArrayList<DisplayName>();
 			saveNames();
 		}
+	}
+	
+	public void save () throws IOException {
+		saveNames();
 	}
 	
 	public void loadNames () throws IOException {

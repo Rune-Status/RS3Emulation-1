@@ -72,9 +72,10 @@ public class ServerChannelAdapterHandler extends ChannelInboundMessageHandlerAda
 				ctx.channel().attr(attributeMap).set(new WorldListSession(ctx));
 				break;
 			case HANDSHAKE_LOGIN:
-				ctx.channel().attr(attributeMap).set(new LoginSession(ctx));
+				ctx.channel().attr(attributeMap).set(new LoginSession(ctx, Main.getloginServer()));
 				break;
-				default: throw new IllegalStateException("Invalid handshake state requested.");
+			default: 
+				throw new IllegalStateException("Invalid handshake state requested.");
 			}
 		} else
 			ctx.channel().attr(attributeMap).get().message(msg);
