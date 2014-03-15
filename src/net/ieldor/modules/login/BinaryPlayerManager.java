@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Ieldor.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.ieldor.io;
+package net.ieldor.modules.login;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -88,9 +88,6 @@ public class BinaryPlayerManager {
 		if(!username.equalsIgnoreCase(message.getUsername()) || !password.equalsIgnoreCase(message.getPassword())) {
 			return new LoadResult(null, LoginResponse.INVALID_UN_PWD);
 		}
-		
-		String displayName = StreamUtil.readString(inputStream);
-		String prevDisplayName = StreamUtil.readString(inputStream);
 		
 		int x = inputStream.readUnsignedShort();
 		int y = inputStream.readUnsignedShort();

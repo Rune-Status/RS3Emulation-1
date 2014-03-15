@@ -38,20 +38,20 @@ import net.ieldor.utility.world.World;
  */
 public class ActionSender {
 	
-	//TODO: Update packet opcodes to the required revision
-	private static final int KEEP_ALIVE_PACKET = 110;
-	private static final int DYNAMIC_VARP_PACKET = 2;
-	private static final int FIXED_VARP_PACKET = 156;
+	//TODO: Update packet opcodes to the required revision. If the revision in the comments is not correct (or missing), the packet needs updating
+	private static final int KEEP_ALIVE_PACKET = 110;//795
+	private static final int DYNAMIC_VARP_PACKET = 2;//795
+	private static final int FIXED_VARP_PACKET = 156;//795
 	
-	private static final int UNLOCK_FRIENDS_LIST = 18;
+	private static final int UNLOCK_FRIENDS_LIST = 154;//795
 	private static final int ONLINE_STATUS_PACKET = 47;
-	private static final int FRIENDS_PACKET = 2;	
-	private static final int IGNORES_PACKET = 14;
+	private static final int FRIENDS_PACKET = 3;//795
+	private static final int IGNORES_PACKET = 15;//795
 	private static final int FRIENDS_CHANNEL_PACKET = 82;
-	private static final int CLAN_CHANNEL_PACKET = 73;
+	private static final int CLAN_CHANNEL_PACKET = 47;//795
 	
-	private static final int WINDOW_PANE_PACKET = 68;
-	private static final int WORLD_LIST_PACKET = 51;
+	private static final int WINDOW_PANE_PACKET = 71;//795
+	private static final int WORLD_LIST_PACKET = 117;//795
 	private static final int MESSAGE_PACKET = 95;
 	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;
 	
@@ -92,12 +92,12 @@ public class ActionSender {
 		int[] xteas = new int[4];
 		
 		PacketBuf buf = new PacketBuf(WINDOW_PANE_PACKET);
-		buf.putLEInt(xteas[3]);
-		buf.putLEShortA(id);
-		buf.putLEInt(xteas[0]);
+		buf.putInt(xteas[0]);
 		buf.putByteS(type);
 		buf.putLEInt(xteas[2]);
-		buf.putInt2(xteas[1]);
+		buf.putShortA(id);
+		buf.putInt(xteas[1]);
+		buf.putInt(xteas[3]);
 		player.getChannel().write(buf.toPacket());
 	}
 
@@ -107,6 +107,9 @@ public class ActionSender {
 	 * @param value The value of the client varp
 	 */
 	public void sendFixedVarp(int id, int value) {
+		if (!player.getChannel().isOpen()) {
+			return;
+		}
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		PacketBuf buf = new PacketBuf(FIXED_VARP_PACKET);
 		buf.putLEShortA(id);
@@ -120,10 +123,13 @@ public class ActionSender {
 	 * @param value The value of the client varp
 	 */
 	public void sendDynamicVarp(int id, int value) {
+		if (!player.getChannel().isOpen()) {
+			return;
+		}
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		PacketBuf buf = new PacketBuf(DYNAMIC_VARP_PACKET);
-		buf.putInt1(value);
-		buf.putLEShortA(id);
+		buf.putInt(value);
+		buf.putLEShort(id);
 		player.getChannel().write(buf.toPacket());
 	}
 

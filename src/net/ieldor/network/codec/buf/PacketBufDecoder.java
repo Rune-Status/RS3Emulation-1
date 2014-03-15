@@ -300,10 +300,14 @@ public class PacketBufDecoder extends ByteToMessageDecoder<Packet> {
 	private State state = State.READ_OPCODE;
 	private boolean variable;
 	private int opcode, size;
+	private boolean stop = true;
 
 
 	@Override
 	public Packet decode(ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
+		if (stop) {
+			return null;
+		}
 		if (state == State.READ_OPCODE) {
 			if (!buf.readable())
 				return null;
@@ -311,8 +315,9 @@ public class PacketBufDecoder extends ByteToMessageDecoder<Packet> {
 			opcode = (buf.readUnsignedByte()) & 0xFF;
 			size = SIZES[opcode];
 
-			if (size == -3)
+			if (size == -3) {
 				throw new IOException("Illegal opcode " + opcode + ".");
+			}
 
 			variable = size == -1;
 			state = variable ? State.READ_SIZE : State.READ_PAYLOAD;

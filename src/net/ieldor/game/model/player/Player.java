@@ -26,12 +26,12 @@ import net.ieldor.Main;
 import net.ieldor.game.model.Entity;
 import net.ieldor.game.model.Position;
 import net.ieldor.game.social.FriendManager;
+import net.ieldor.modules.login.NameManager.DisplayName;
 import net.ieldor.network.ActionSender;
 import net.ieldor.network.ServerChannelAdapterHandler;
 import net.ieldor.network.codec.buf.PacketBufDecoder;
 import net.ieldor.network.codec.buf.PacketBufEncoder;
 import net.ieldor.network.session.impl.GameSession;
-import net.ieldor.utility.NameManager.DisplayName;
 
 /**
  * Represents an {@link Entity} that is controlled by a physical human being.

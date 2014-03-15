@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with RS3Emulator.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.ieldor.utility;
+package net.ieldor.modules.login;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -24,9 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
-import net.ieldor.io.BinaryPlayerManager.StreamUtil;
+import net.ieldor.modules.login.BinaryPlayerManager.StreamUtil;
 
 /**
  * RS3Emulator
