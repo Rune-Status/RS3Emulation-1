@@ -24,10 +24,11 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.game.social.Friend;
 import net.ieldor.game.social.Ignore;
 import net.ieldor.game.social.OnlineStatus;
+import net.ieldor.io.Packet;
 import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
+import net.ieldor.modules.worldlist.World;
 import net.ieldor.utility.BinaryLandscapeHandler;
-import net.ieldor.utility.world.World;
 
 /**
  * A class used to store the packets (actions) that an {@link Entity} can
@@ -51,7 +52,7 @@ public class ActionSender {
 	private static final int CLAN_CHANNEL_PACKET = 47;//795
 	
 	private static final int WINDOW_PANE_PACKET = 71;//795
-	private static final int WORLD_LIST_PACKET = 117;//795
+	public static final int WORLD_LIST_PACKET = 117;//795
 	private static final int MESSAGE_PACKET = 95;
 	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;
 	
@@ -72,6 +73,17 @@ public class ActionSender {
 	 */
 	public ActionSender(Player player) {
 		this.player = player;
+	}
+	
+	/**
+	 * Sends the specified packet to the player, so long as the player's channel is still open.
+	 * @param packet the packet to send.
+	 */
+	public void sendPacket (Packet packet) {
+		if (!player.getChannel().isOpen()) {
+			return;//If the channel has been closed, don't bother trying to send the packet
+		}		
+		player.getChannel().write(packet);
 	}
 	
 	/**
@@ -98,7 +110,7 @@ public class ActionSender {
 		buf.putShortA(id);
 		buf.putInt(xteas[1]);
 		buf.putInt(xteas[3]);
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 
 	/**
@@ -107,14 +119,11 @@ public class ActionSender {
 	 * @param value The value of the client varp
 	 */
 	public void sendFixedVarp(int id, int value) {
-		if (!player.getChannel().isOpen()) {
-			return;
-		}
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		PacketBuf buf = new PacketBuf(FIXED_VARP_PACKET);
 		buf.putLEShortA(id);
 		buf.putByteC(value);
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 
 	/**
@@ -123,14 +132,11 @@ public class ActionSender {
 	 * @param value The value of the client varp
 	 */
 	public void sendDynamicVarp(int id, int value) {
-		if (!player.getChannel().isOpen()) {
-			return;
-		}
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		PacketBuf buf = new PacketBuf(DYNAMIC_VARP_PACKET);
 		buf.putInt(value);
 		buf.putLEShort(id);
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 
 	/**
@@ -153,7 +159,7 @@ public class ActionSender {
 	public void sendOnlineStatus(OnlineStatus status) {
 		PacketBuf buf = new PacketBuf(ONLINE_STATUS_PACKET);
 		buf.put(status.getCode());
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 	
 	/**
@@ -162,7 +168,7 @@ public class ActionSender {
 	 */
 	public void sendUnlockFriendsList () {
 		PacketBuf buf = new PacketBuf(UNLOCK_FRIENDS_LIST);
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 	
 	/**
@@ -174,7 +180,7 @@ public class ActionSender {
 		for (Friend f : friends) {
 			packFriend(f, false, buf);
 		}
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 	
 	/**
@@ -185,7 +191,7 @@ public class ActionSender {
 	public void sendFriend (Friend friend, boolean isNameChange) {
 		PacketBuf buf = new PacketBuf(FRIENDS_PACKET, PacketType.SHORT);
 		packFriend(friend, isNameChange, buf);
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}	
 	
 	/**
@@ -228,7 +234,7 @@ public class ActionSender {
 		for (Ignore i : ignores) {
 			packIgnore(i, false, buf);
 		}
-		player.getChannel().write(buf.toPacket());			
+		sendPacket(buf.toPacket());			
 	}
 	
 	/**
@@ -239,7 +245,7 @@ public class ActionSender {
 	public void sendIgnore(Ignore ignore, boolean isNameChange) {
 		PacketBuf buf = new PacketBuf(IGNORES_PACKET, PacketType.SHORT);
 		packIgnore(ignore, isNameChange, buf);
-		player.getChannel().write(buf.toPacket());		
+		sendPacket(buf.toPacket());		
 	}
 	
 	/**
@@ -328,7 +334,7 @@ public class ActionSender {
 		buf.putShortA(interfaceCount++);
 		buf.putShort(child);
 		
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 
 	/**
@@ -364,7 +370,7 @@ public class ActionSender {
 		buf.putShort(player.getPosition().getRegionX());
 		buf.putShortA(player.getPosition().getRegionY());
 		buf.putShortA(player.getPosition().getLocalY());
-		player.getChannel().write(buf.toPacket());
+		sendPacket(buf.toPacket());
 	}
 
 	/**

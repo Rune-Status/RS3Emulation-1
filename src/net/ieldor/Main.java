@@ -35,7 +35,9 @@ import net.ieldor.cache.Container;
 import net.ieldor.cache.FileStore;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.service.ServiceManager;
+import net.ieldor.modules.login.LoginManager;
 import net.ieldor.modules.login.NameManager;
+import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.ChannelChildHandler;
 import net.ieldor.ondemand.UpdateService;
 import net.ieldor.utility.CharacterRepository;
@@ -81,7 +83,7 @@ public class Main {
 	/**
 	 * The name management service, used for managing player display names
 	 */
-	private static NameManager nameManager;
+	private static LoginManager loginServer;
 
 	/**
 	 * The {@link CharacterRepository} for storing players.
@@ -155,8 +157,11 @@ public class Main {
 		checksumTable = container.encode();
 		serviceManager.startAll();
 		
-		nameManager = new NameManager();
-		nameManager.init();
+		loginServer = new LoginManager();
+		loginServer.init();
+		logger.info("Initialised login server.");
+		
+		WorldList.init();
 	}
 
 
@@ -200,7 +205,7 @@ public class Main {
 	 * 
 	 * @return the name manager
 	 */
-	public static NameManager getNameManager () {
-		return nameManager;
+	public static LoginManager getloginServer () {
+		return loginServer;
 	}
 }

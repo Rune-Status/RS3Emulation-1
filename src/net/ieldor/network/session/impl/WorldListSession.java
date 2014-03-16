@@ -18,10 +18,11 @@ package net.ieldor.network.session.impl;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import net.ieldor.modules.worldlist.Country;
+import net.ieldor.modules.worldlist.ServerLocation;
+import net.ieldor.modules.worldlist.World;
 import net.ieldor.network.codec.messages.WorldListMessage;
 import net.ieldor.network.session.Session;
-import net.ieldor.utility.world.Country;
-import net.ieldor.utility.world.World;
 
 /**
  * An {@link Session} that handles the world list update.
@@ -62,7 +63,8 @@ public class WorldListSession extends Session {
 	 */
 	@Override
 	public void message(Object obj) {
-		World[] worlds = { new World(1, "World 1", World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, 0, "Ieldor BETA", "127.0.0.1"), new World(2, "World 2", World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, 0, "Ieldor BETA", "127.0.0.1") };
+		World[] worlds = { new World(1, "World 1", World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, Country.DEFAULT, "Ieldor BETA", "127.0.0.1", ServerLocation.US_EAST_1), 
+				new World(2, "World 2", World.FLAG_MEMBERS | World.FLAG_QUICK_CHAT, Country.DEFAULT, "Ieldor BETA", "127.0.0.1", ServerLocation.US_EAST_2) };
 		int[] players = { 0 };
 		channel.write(new WorldListMessage(0xDEADBEEF, COUNTRIES, worlds, players)).addListener(ChannelFutureListener.CLOSE);
 	}

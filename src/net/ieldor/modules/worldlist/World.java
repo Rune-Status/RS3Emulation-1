@@ -1,4 +1,4 @@
-package net.ieldor.utility.world;
+package net.ieldor.modules.worldlist;
 
 public final class World {
 
@@ -8,16 +8,19 @@ public final class World {
 	public static final int FLAG_LOOT_SHARE = 0x8;
 	public static final int FLAG_HIGHLIGHT  = 0x10;
 
-	private final int id, flags, country;
+	private final int id, flags;
 	private final String activity, ip, name;
+	private final Country country;
+	private final ServerLocation location;
 
-	public World(int id, String name, int flags, int country, String activity, String ip) {
+	public World(int id, String name, int flags, Country country, String activity, String ip, ServerLocation location) {
 		this.id = id;
 		this.name = name;
 		this.flags = flags;
 		this.country = country;
 		this.activity = activity;
 		this.ip = ip;
+		this.location = location;
 	}
 
 	public int getNodeId() {
@@ -32,7 +35,7 @@ public final class World {
 		return flags;
 	}
 
-	public int getCountry() {
+	public Country getCountry() {
 		return country;
 	}
 
@@ -42,6 +45,10 @@ public final class World {
 
 	public String getIp() {
 		return ip;
+	}
+	
+	public ServerLocation getServerLocation () {
+		return location;
 	}
 
 }

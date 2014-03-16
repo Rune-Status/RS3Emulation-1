@@ -26,6 +26,7 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.io.Packet;
 import net.ieldor.io.PacketReader;
 import net.ieldor.modules.login.BinaryPlayerManager;
+import net.ieldor.network.MiscPacketDecoder;
 import net.ieldor.network.packet.PacketAssembler;
 import net.ieldor.network.packet.PacketContext;
 import net.ieldor.network.packet.PacketDecoder;
@@ -77,6 +78,7 @@ public class GameSession extends Session {
 	public void message(Object obj) {
 		Packet gamePacket = (Packet) obj;
 		PacketAssembler assembler = GameEngine.getGameEngine().getPacketCodec().get(gamePacket.getOpcode());
+		//System.out.println("Packet="+gamePacket.getOpcode()+", assembler="+(assembler == null ? "null" : "exists"));
 		if(assembler != null) {
 			PacketDecoder<?> decoder = assembler.getDecoder();
 			if(decoder != null) {
@@ -94,6 +96,10 @@ public class GameSession extends Session {
 					handler.handle(player, null);
 				}
 			}
+		} else {
+			//Do manual packet management
+			//TODO Somehow integrate this into the main packet management system
+			MiscPacketDecoder.decodeMiscPacket(gamePacket, player);
 		}
 	}
 }

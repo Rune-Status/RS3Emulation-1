@@ -16,8 +16,14 @@
  */
 package net.ieldor.game.social;
 
-import net.ieldor.utility.world.World;
+import net.ieldor.modules.worldlist.World;
 
+/**
+ * An {@link Object} that represents a player's friend
+ *
+ * @author Sundays211
+ *
+ */
 public class Friend {
 	public final String username;
 	private String currentName;

@@ -1,4 +1,4 @@
-package net.ieldor.utility.world;
+package net.ieldor.modules.worldlist;
 
 public final class Country {
 
@@ -15,6 +15,9 @@ public final class Country {
 	public static final int FLAG_DENMARK     = 58;
 	public static final int FLAG_BRAZIL      = 31;
 	public static final int FLAG_MEXICO      = 152;
+	public static final Country UK = new Country(FLAG_UK, "UK");
+	public static final Country USA = new Country(FLAG_USA, "United States");
+	public static final Country DEFAULT = new Country(0, "None");
 
 	private final int flag;
 	private final String name;

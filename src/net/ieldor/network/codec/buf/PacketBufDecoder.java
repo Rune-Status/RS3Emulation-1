@@ -190,8 +190,9 @@ public class PacketBufDecoder extends ByteToMessageDecoder<Packet> {
 		}
 
 		if (state == State.READ_SIZE) {
-			if (!buf.readable())
+			if (!buf.readable()) {
 				return null;
+			}
 
 			size = buf.readUnsignedByte();
 			state = State.READ_PAYLOAD;
@@ -203,6 +204,8 @@ public class PacketBufDecoder extends ByteToMessageDecoder<Packet> {
 
 			ByteBuf payload = buf.readBytes(size);
 			state = State.READ_OPCODE;
+			
+			//System.out.println("Received packet: opcode="+opcode+", size="+size);
 
 			return new Packet(opcode, variable ? PacketType.BYTE : PacketType.FIXED, payload);
 		}

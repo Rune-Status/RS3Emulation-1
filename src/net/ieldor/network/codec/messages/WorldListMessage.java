@@ -1,7 +1,7 @@
 package net.ieldor.network.codec.messages;
 
-import net.ieldor.utility.world.Country;
-import net.ieldor.utility.world.World;
+import net.ieldor.modules.worldlist.Country;
+import net.ieldor.modules.worldlist.World;
 
 public final class WorldListMessage {
 
