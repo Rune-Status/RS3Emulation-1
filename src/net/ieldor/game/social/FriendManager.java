@@ -20,10 +20,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import net.ieldor.Main;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.modules.login.BinaryPlayerManager.StreamUtil;
+import net.ieldor.modules.login.NameManager;
 import net.ieldor.modules.login.NameManager.DisplayName;
 
 /**
@@ -36,45 +38,55 @@ import net.ieldor.modules.login.NameManager.DisplayName;
 public class FriendManager {
 	
 	private Player player;
+	private NameManager nameManager;
 	
 	private static final int FRIENDS_LIST_MAX = 400;
 	private static final int IGNORE_LIST_MAX = 400;
 	
-	private ArrayList<Friend> friends = new ArrayList<Friend>(FRIENDS_LIST_MAX);
-	private ArrayList<Ignore> ignores = new ArrayList<Ignore>(IGNORE_LIST_MAX);
+	private HashMap<String, Friend> friends = new HashMap<String, Friend>(FRIENDS_LIST_MAX);
+	private HashMap<String, Ignore> ignores = new HashMap<String, Ignore>(IGNORE_LIST_MAX);
 	
 	private OnlineStatus onlineStatus = OnlineStatus.NOBODY;
 	
-	public FriendManager (Player player) {
+	public FriendManager (Player player, NameManager nameManager) {
 		this.player = player;
+		this.nameManager = nameManager;
 	}
 	
-	public void initFriends () {
-		for (Friend f : friends) {
-			DisplayName nameData = Main.getloginServer().nameManager.getDisplayNamesFromUsername(f.username);
-			f.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());
+	public void init () {
+		for (Friend f : friends.values()) {
+			DisplayName nameData = nameManager.getDisplayNamesFromUsername(f.username);
+			if (nameData == null) {
+				f.setDisplayNames(f.username, "");
+			} else {
+				f.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());
+			}
 			//TODO Add world determining logic
 		}
-		for (Ignore i : ignores) {
-			DisplayName nameData = Main.getloginServer().nameManager.getDisplayNamesFromUsername(i.username);
-			i.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());
+		for (Ignore i : ignores.values()) {
+			DisplayName nameData = nameManager.getDisplayNamesFromUsername(i.username);
+			if (nameData == null) {
+				i.setDisplayNames(i.username, "");
+			} else {
+				i.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());
+			}
 		}
 		player.getActionSender().sendOnlineStatus(onlineStatus);
-		player.getActionSender().sendFriends(friends);
-		player.getActionSender().sendIgnores(ignores);
+		player.getActionSender().sendFriends(friends.values());
+		player.getActionSender().sendIgnores(ignores.values());
 	}
 	
 	public void serialise (DataOutputStream output) throws IOException {
 		synchronized (this) {
 			output.writeShort(friends.size());
-			for (Friend f : friends) {
+			for (Friend f : friends.values()) {
 				StreamUtil.writeString(output, f.username);
 				output.writeByte(f.isReferred() ? 1 : 0);
 				output.writeByte(f.getFcRank());
 				StreamUtil.writeString(output, f.getNote());
 			}
 			output.writeShort(ignores.size());
-			for (Ignore i : ignores) {
+			for (Ignore i : ignores.values()) {
 				StreamUtil.writeString(output, i.username);
 				StreamUtil.writeString(output, i.getNote());
 			}
@@ -96,19 +108,25 @@ public class FriendManager {
 					fcRank = input.readByte();
 					note = StreamUtil.readString(input);
 					Friend f = new Friend(name, isReferred, fcRank, note);
-					friends.add(f);
+					friends.put(NameManager.simplifyName(name), f);
 				}
 				int ignoreListSize = input.readUnsignedShort();
 				for (int i=0;i<ignoreListSize;i++) {
 					name = StreamUtil.readString(input);
 					note = StreamUtil.readString(input);
 					Ignore ig = new Ignore(name, note);
-					ignores.add(ig);
+					ignores.put(NameManager.simplifyName(name), ig);
 				}
 				int onlineStatusCode = input.readUnsignedByte();
 				onlineStatus = OnlineStatus.get(onlineStatusCode);
 			}
 		}
+	}
+	
+	public void setOnlineStatus (OnlineStatus status) {
+		onlineStatus = status;		
+		player.getActionSender().sendOnlineStatus(status);
+		//TODO notify friends (and other players, if applicable) of online status change
 	}
 	
 	public void addIgnore (String displayName, boolean tillLogout) {		
@@ -118,7 +136,7 @@ public class FriendManager {
 			return;
 		}
 		
-		DisplayName nameData = Main.getloginServer().nameManager.getNameObject(displayName);
+		DisplayName nameData = nameManager.getNameObject(displayName);
 		Ignore ignore = null;
 		if (nameData == null) {
 			//Player does not exist. In the main game, this would spring an error. Here, we will allow it.
@@ -134,22 +152,36 @@ public class FriendManager {
 				return;
 			}
 			
-			if (friends.contains(displayName)) {
+			if (friends.containsKey(ignore.username)) {
 				//TODO add message send (on friends list). This also needs to be fixed, as it only searches using a name
 				return;
 			}
-			ignores.add(ignore);
+			ignores.put(NameManager.simplifyName(ignore.username), ignore);
 		}
 		player.getActionSender().sendIgnore(ignore, false);
 	}
 	
+	public void removeIgnore (String displayName) {
+		DisplayName names = nameManager.getNameObject(displayName);
+		if (names == null) {
+			//This removes a player based off their display name. If the server allows players to choose display names which are being used as usernames, this should be removed.
+			ignores.remove(NameManager.simplifyName(displayName));
+		} else {
+			ignores.remove(NameManager.simplifyName(names.username));
+		}
+	}
+	
+	/**
+	 * Adds the specified friend to the player's friends list, after performing a few checks
+	 * @param displayName The display name of the friend to add
+	 */
 	public void addFriend (String displayName) {		
 		if (displayName.equalsIgnoreCase(player.getDisplayName()) 
 				|| displayName.equalsIgnoreCase(player.getPrevDisplayName())) {
 			//TODO add message send (cannot add self)
 			return;
 		}
-		DisplayName nameData = Main.getloginServer().nameManager.getNameObject(displayName);		
+		DisplayName nameData = nameManager.getNameObject(displayName);		
 		Friend friend = null;
 		if (nameData == null) {
 			//Player does not exist. In the main game, this would spring an error. Here, we will allow it.
@@ -163,16 +195,27 @@ public class FriendManager {
 		
 		synchronized (this) {//Synchronised to avoid concurrent modification issues
 			if (friends.size() >= FRIENDS_LIST_MAX) {
-				//TODO add message send (ignore list full)
+				//TODO add message send (friend list full)
 				return;
 			}
 			
-			if (ignores.contains(displayName)) {
+			if (ignores.containsKey(friend.username)) {
 				//TODO add message send (on ignore list)
 				return;
 			}			
-			friends.add(friend);
+			friends.put(NameManager.simplifyName(friend.username), friend);
 		}
 		player.getActionSender().sendFriend(friend, false);
+	}
+	
+	public void removeFriend (String displayName) {
+		DisplayName names = nameManager.getNameObject(displayName);
+		if (names == null) {
+			//This removes a player based off their display name. If the server allows players to choose display names which are being used as usernames, this should be removed.
+			friends.remove(NameManager.simplifyName(displayName));
+		} else {
+			friends.remove(NameManager.simplifyName(names.username));
+		}
+		//TODO Add logic to switch the online status of the player for the removed friend
 	}
 }

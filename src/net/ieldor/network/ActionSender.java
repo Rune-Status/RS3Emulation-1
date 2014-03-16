@@ -16,6 +16,7 @@
  */
 package net.ieldor.network;
 
+import java.util.Collection;
 import java.util.List;
 
 import io.netty.channel.ChannelFuture;
@@ -45,7 +46,7 @@ public class ActionSender {
 	private static final int FIXED_VARP_PACKET = 156;//795
 	
 	private static final int UNLOCK_FRIENDS_LIST = 154;//795
-	private static final int ONLINE_STATUS_PACKET = 47;
+	private static final int ONLINE_STATUS_PACKET = 4;//795
 	private static final int FRIENDS_PACKET = 3;//795
 	private static final int IGNORES_PACKET = 15;//795
 	private static final int FRIENDS_CHANNEL_PACKET = 82;
@@ -175,7 +176,7 @@ public class ActionSender {
 	 * Sends all the friends currently on a player's friends list (used for friends list initialisation
 	 * @param friends A list containing all the friends on the player's friends list
 	 */
-	public void sendFriends (List<Friend> friends) {
+	public void sendFriends (Collection<Friend> friends) {
 		PacketBuf buf = new PacketBuf(FRIENDS_PACKET, PacketType.SHORT);
 		for (Friend f : friends) {
 			packFriend(f, false, buf);
@@ -229,7 +230,7 @@ public class ActionSender {
 	 * Sends all the ignores currently on a player's ignore list. Used for initialising the ignore list
 	 * @param ignores A list containing all the ignores on the player's ignore list
 	 */
-	public void sendIgnores(List<Ignore> ignores) {
+	public void sendIgnores(Collection<Ignore> ignores) {
 		PacketBuf buf = new PacketBuf(IGNORES_PACKET, PacketType.SHORT);
 		for (Ignore i : ignores) {
 			packIgnore(i, false, buf);

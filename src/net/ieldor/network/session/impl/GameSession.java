@@ -99,7 +99,7 @@ public class GameSession extends Session {
 		} else {
 			//Do manual packet management
 			//TODO Somehow integrate this into the main packet management system
-			MiscPacketDecoder.decodeMiscPacket(gamePacket, player);
+			MiscPacketDecoder.decodeMiscPacket(new PacketReader(gamePacket), player);
 		}
 	}
 }

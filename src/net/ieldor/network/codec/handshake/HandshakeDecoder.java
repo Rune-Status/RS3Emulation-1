@@ -50,6 +50,7 @@ public class HandshakeDecoder extends ChannelInboundByteHandlerAdapter  {
 		ctx.pipeline().remove(HandshakeDecoder.class);
 		
 		int incomingOpcode = in.readByte() & 0xFF;
+		//System.out.println("Received handshake opcode: "+incomingOpcode);
 		HandshakeState handshakeState = HandshakeState.forId(incomingOpcode);
 
 		if (handshakeState == null)
