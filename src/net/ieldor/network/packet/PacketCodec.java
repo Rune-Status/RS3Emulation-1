@@ -22,8 +22,8 @@ public final class PacketCodec {
 	
 	//TODO Update packet opcodes to 795
 	public final static int SCREEN_PACKET = -1;
-	public final static int PING_PACKET = 0;
-	public final static int WORLD_LIST_UPDATE = 100;
+	public final static int PING_PACKET = 0;//795
+	public final static int WORLD_LIST_UPDATE = 100;//795
 	
 	public final static int ACTION_BUTTON1_PACKET = -1;
 	public final static int ACTION_BUTTON2_PACKET = -1;
@@ -36,12 +36,12 @@ public final class PacketCodec {
 	public final static int ACTION_BUTTON9_PACKET = -1;
 	public final static int ACTION_BUTTON10_PACKET = -1;
 	
-	public final static int JOIN_FRIEND_CHAT_PACKET = -1;
-	public final static int ONLINE_STATUS_PACKET = -1;
-	public final static int ADD_FRIEND_PACKET = -1;
-	public final static int REMOVE_FRIEND_PACKET = -1;
-	public final static int ADD_IGNORE_PACKET = -1;
-	public final static int REMOVE_IGNORE_PACKET = -1;
+	public final static int JOIN_FRIEND_CHAT_PACKET = 71;//795
+	public final static int ONLINE_STATUS_PACKET = 83;//795
+	public final static int ADD_FRIEND_PACKET = 64;//795
+	public final static int REMOVE_FRIEND_PACKET = 112;//795
+	public final static int ADD_IGNORE_PACKET = 11;//795
+	public final static int REMOVE_IGNORE_PACKET = 80;//795
 
 	/**
 	 * The maximum packets.

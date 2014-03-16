@@ -66,7 +66,7 @@ public class Player extends Entity {
 	 */
 	private Appearance appearance = new Appearance();
 	
-	private FriendManager friendManager = new FriendManager(this);
+	private FriendManager friendManager = new FriendManager(this, Main.getloginServer().nameManager);
 	
 	
 	/**
@@ -100,6 +100,7 @@ public class Player extends Entity {
 		Logger.getAnonymousLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
 		sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
 		getActionSender().sendWindowPane(906, 0);//Sends the lobby pane
+		friendManager.init();
 	}
 	
 	public void sendLobbyConfigs (int[] configs) {
