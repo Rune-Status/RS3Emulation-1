@@ -20,10 +20,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import net.ieldor.modules.worldlist.Country;
+import net.ieldor.modules.worldlist.World;
 import net.ieldor.network.codec.messages.WorldListMessage;
 import net.ieldor.utility.ByteBufUtils;
-import net.ieldor.utility.world.Country;
-import net.ieldor.utility.world.World;
 
 /**
  * An {@link MessageToByteEncoder} to handle the data of the world list.
@@ -75,7 +75,7 @@ public class WorldListEncoder extends MessageToByteEncoder<WorldListMessage> {
 
 		for (World world : worlds) {
 			ByteBufUtils.writeSmart(buf, world.getNodeId() - minId);
-			buf.writeByte(world.getCountry());
+			buf.writeByte(world.getCountry().getFlag());
 			buf.writeInt(world.getFlags());
 			ByteBufUtils.writeWorldListString(buf, world.getActivity());
 			ByteBufUtils.writeWorldListString(buf, world.getIp());

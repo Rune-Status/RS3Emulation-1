@@ -16,7 +16,7 @@
  */
 package net.ieldor.game.social;
 
-import net.ieldor.utility.world.World;
+import net.ieldor.modules.worldlist.World;
 
 /**
  * An {@link Object} that represents a player's friend

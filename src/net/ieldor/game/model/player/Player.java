@@ -92,9 +92,11 @@ public class Player extends Entity {
 	}
 	
 	public void lobbyLogin (ChannelHandlerContext channelHandlerContext) {
-		channel.pipeline().addFirst(new PacketBufEncoder(), new PacketBufDecoder());
+		channel.pipeline().replace("decoder", "decoder", new PacketBufDecoder());
+		channel.pipeline().addFirst(new PacketBufEncoder());
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
+		
 		Logger.getAnonymousLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
 		sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
 		getActionSender().sendWindowPane(906, 0);//Sends the lobby pane

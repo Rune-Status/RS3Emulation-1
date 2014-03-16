@@ -29,13 +29,14 @@ import net.ieldor.game.model.player.LoadResult;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.io.InputStream;
 import net.ieldor.io.Packet;
+import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.codec.messages.LobbyLoginData;
 import net.ieldor.network.codec.messages.LoginHandshakeMessage;
 import net.ieldor.network.codec.messages.LoginResponse;
 import net.ieldor.utility.Base37Utils;
 import net.ieldor.utility.ByteBufUtils;
 import net.ieldor.utility.XTEA;
-import net.ieldor.utility.world.World;
 
 /**
  * RS3Emulator
@@ -176,7 +177,7 @@ public class LoginManager {
 		String loginIp = null;
 		int emailStatus = 3;//email status (0 - no email, 1 - pending parental confirmation, 2 - pending confirmation, 3 - registered)
 		String displayName = player.getDisplayName();		
-		World defaultWorld = new World(2, "World 2", 0x1, 77, "World 2", "127.0.0.1");
+		World defaultWorld = WorldList.DEFAULT_WORLD;
 		
 		LobbyLoginData lobbyData = new LobbyLoginData(rights, memberEndDate, memberFlags, lastLoginDay,
 				recoverySetDay, msgCount, loginIp, emailStatus, displayName, defaultWorld);

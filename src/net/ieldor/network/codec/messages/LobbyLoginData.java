@@ -17,7 +17,7 @@
 package net.ieldor.network.codec.messages;
 
 import net.ieldor.game.model.player.Player;
-import net.ieldor.utility.world.World;
+import net.ieldor.modules.worldlist.World;
 
 /**
  * RS3Emulator

@@ -37,6 +37,7 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.game.service.ServiceManager;
 import net.ieldor.modules.login.LoginManager;
 import net.ieldor.modules.login.NameManager;
+import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.ChannelChildHandler;
 import net.ieldor.ondemand.UpdateService;
 import net.ieldor.utility.CharacterRepository;
@@ -159,6 +160,8 @@ public class Main {
 		loginServer = new LoginManager();
 		loginServer.init();
 		logger.info("Initialised login server.");
+		
+		WorldList.init();
 	}
 
 

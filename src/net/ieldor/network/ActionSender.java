@@ -27,8 +27,8 @@ import net.ieldor.game.social.OnlineStatus;
 import net.ieldor.io.Packet;
 import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
+import net.ieldor.modules.worldlist.World;
 import net.ieldor.utility.BinaryLandscapeHandler;
-import net.ieldor.utility.world.World;
 
 /**
  * A class used to store the packets (actions) that an {@link Entity} can
@@ -52,7 +52,7 @@ public class ActionSender {
 	private static final int CLAN_CHANNEL_PACKET = 47;//795
 	
 	private static final int WINDOW_PANE_PACKET = 71;//795
-	private static final int WORLD_LIST_PACKET = 117;//795
+	public static final int WORLD_LIST_PACKET = 117;//795
 	private static final int MESSAGE_PACKET = 95;
 	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;
 	

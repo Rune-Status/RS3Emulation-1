@@ -71,7 +71,7 @@ public class LoginSession extends Session {
 	 */
 	@Override
 	public void message(Object obj) {
-		// System.out.println("Login message method called...");
+		//System.out.println("Login message method called...");
 		if (obj instanceof LoginPayload) {
 			LoginPayload loginData = (LoginPayload) obj;
 			ByteBuf buffer = Unpooled.wrappedBuffer(loginData.getPayload());
