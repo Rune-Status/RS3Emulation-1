@@ -26,7 +26,10 @@ import net.ieldor.Main;
 import net.ieldor.game.model.Entity;
 import net.ieldor.game.model.Position;
 import net.ieldor.game.social.FriendManager;
+import net.ieldor.modules.login.NameManager;
 import net.ieldor.modules.login.NameManager.DisplayName;
+import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.ActionSender;
 import net.ieldor.network.ServerChannelAdapterHandler;
 import net.ieldor.network.codec.buf.PacketBufDecoder;
@@ -66,8 +69,12 @@ public class Player extends Entity {
 	 */
 	private Appearance appearance = new Appearance();
 	
+	/**
+	 * The social (friends/ignores) manager for the player
+	 */
 	private FriendManager friendManager = new FriendManager(this, Main.getloginServer().nameManager);
 	
+	private World currentWorld = null;
 	
 	/**
 	 * Constructs a new {@code Player} instance.
@@ -88,6 +95,7 @@ public class Player extends Entity {
 			setDisplayName(nameData.getDisplayName(), nameData.getPrevName());
 		} else {
 			setDisplayName(username, "");
+			Main.getloginServer().nameManager.setInitDisplayName(username, NameManager.formatDisplayName(username));
 		}
 	}
 	
@@ -96,6 +104,7 @@ public class Player extends Entity {
 		channel.pipeline().addFirst(new PacketBufEncoder());
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
+		currentWorld = WorldList.LOBBY;
 		
 		Logger.getAnonymousLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
 		sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
@@ -110,6 +119,11 @@ public class Player extends Entity {
 				getActionSender().sendVarp(i, val);
 			}
 		}
+	}
+	
+	public void disconnect () {
+		currentWorld = null;
+		friendManager.disconnect();
 	}
 	
 	/**
@@ -200,5 +214,9 @@ public class Player extends Entity {
 	 */
 	public Appearance getAppearance() {
 		return appearance;
+	}
+	
+	public World getWorldInfo () {
+		return currentWorld;
 	}
 }

@@ -30,6 +30,7 @@ public class WorldList {
 	
 	public static final World DEFAULT_WORLD 
 		= new World(2, "World 2", World.FLAG_MEMBERS | World.FLAG_LOOT_SHARE, Country.USA, "Default", "127.0.0.1", ServerLocation.US_EAST_1);
+	public static final World LOBBY = new World(1100, "Lobby", 0, Country.USA, "", "127.0.0.1", ServerLocation.US_EAST_1);
 
 	
 	public static void init () {

@@ -212,7 +212,7 @@ public class ActionSender {
 			flags |= 0x2;
 		}
 		
-		packet.put(isNameChange ? 0 : 1);//Is this a notification of a friend name change
+		packet.put(isNameChange ? 1 : 0);//Is this a notification of a friend name change
 		packet.putString(friend.getName());//Current display name
 		packet.putString(friend.getPrevName() == null ? "" : friend.getPrevName());//Previous display name, or empty string if null
 		packet.putShort(putOnline ? world.getNodeId() : 0);//NodeID (world ID) of friend, or 0 if offline
