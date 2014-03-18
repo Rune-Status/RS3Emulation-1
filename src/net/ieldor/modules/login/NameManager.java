@@ -97,6 +97,9 @@ public class NameManager {
 					username = StreamUtil.readString(inputStream);
 					displayName = StreamUtil.readString(inputStream);
 					prevName = StreamUtil.readString(inputStream);
+					if (username.isEmpty() || displayName.isEmpty()) {
+						continue;
+					}
 					nameObject = new DisplayName(username, displayName, prevName);
 					playerDisplayNames.add(nameObject);
 					displayNameCache.put(simplifyName(displayName), nameObject);
@@ -199,12 +202,18 @@ public class NameManager {
 	 * @param displayName	The desired display name.
 	 * @return				true if the name was set successfully, false otherwise
 	 */
-	public boolean setNewDisplayName (String username, String displayName) {
-		if (nameExists(displayName)) {
+	public boolean setInitDisplayName (String username, String displayName) {
+		if (nameExists(displayName) || username.length() == 0 || displayName.length() == 0) {
 			return false;
 		}
 		DisplayName nameObj = new DisplayName(username, displayName, "");
 		displayNameCache.put(simplifyName(nameObj.displayName), nameObj);
+		playerDisplayNames.add(nameObj);
+		try {
+			save();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return true;
 	}
 	

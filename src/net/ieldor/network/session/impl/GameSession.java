@@ -60,6 +60,7 @@ public class GameSession extends Session {
 	 */
 	@Override
 	public void disconnected() {
+		player.disconnect();
 		try {
 			BinaryPlayerManager.savePlayer(player);
 		} catch (IOException e) {

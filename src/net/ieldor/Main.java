@@ -160,7 +160,6 @@ public class Main {
 		loginServer = new LoginManager();
 		loginServer.init();
 		logger.info("Initialised login server.");
-		
 		WorldList.init();
 	}
 
