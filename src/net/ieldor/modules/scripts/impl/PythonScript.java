@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import net.ieldor.modules.scripts.Script;
 
-public class PythonScript extends Scripts {
+public class PythonScript extends Script {
 
     @Override
     public void loadScripts(String path) throws IOException {
