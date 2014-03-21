@@ -28,9 +28,10 @@ import net.ieldor.Constants;
 import net.ieldor.game.model.player.LoadResult;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.io.InputStream;
-import net.ieldor.io.Packet;
 import net.ieldor.modules.worldlist.World;
 import net.ieldor.modules.worldlist.WorldList;
+import net.ieldor.network.codec.login.LoginConfigData;
+import net.ieldor.network.codec.messages.GameLoginData;
 import net.ieldor.network.codec.messages.LobbyLoginData;
 import net.ieldor.network.codec.messages.LoginHandshakeMessage;
 import net.ieldor.network.codec.messages.LoginResponse;
@@ -54,6 +55,185 @@ public class LoginManager {
 	
 	public void init () throws IOException {
 		nameManager.init();
+	}
+	
+	public Player runGameLogin (ByteBuf buffer, Channel channel, ChannelHandlerContext context) {
+		boolean unknownEquals14 = buffer.readUnsignedByte() == 1;
+		int secureBufferSize = buffer.readShort() & 0xFFFF;
+		if (buffer.readableBytes() < secureBufferSize) {
+			channel.write(new LoginResponse(LoginResponse.BAD_SESSION));
+			//session.getLoginPackets().sendClientPacket(10);
+			return null;
+		}
+		byte[] secureBytes = new byte[secureBufferSize];
+		buffer.readBytes(secureBytes);
+
+		ByteBuf secureBuffer = Unpooled.wrappedBuffer(new BigInteger(secureBytes)
+			.modPow(Constants.JS5PrivateKey, Constants.JS5ModulusKey).toByteArray());
+		/*byte[] data = new byte[rsaBlockSize];
+		buffer.readBytes(data, 0, rsaBlockSize);
+		InputStream rsaStream = new InputStream(Utils.cryptRSA(data, Settings.PRIVATE_EXPONENT, Settings.MODULUS));*/
+		int blockOpcode = secureBuffer.readUnsignedByte();
+
+		if (blockOpcode != 10) {
+			channel.write(new LoginResponse(LoginResponse.BAD_LOGIN_PACKET));
+			//session.getLoginPackets().sendClientPacket(10);
+			return null;
+		}
+
+		int[] xteaKey = new int[4];
+		for (int key = 0; key < xteaKey.length; key++) {
+			xteaKey[key] = secureBuffer.readInt();
+		}
+
+		long vHash = secureBuffer.readLong();
+		if (vHash != 0L) {// rsa block check, pass part
+			channel.write(new LoginResponse(LoginResponse.BAD_LOGIN_PACKET));
+			return null;
+		}
+
+		String password = ByteBufUtils.readString(secureBuffer);
+		System.out.println("Password: "+password);
+		//TODO: Implement password encryption
+		//password = Encrypt.encryptSHA1(password);
+		//System.out.println("Found password: "+password);
+		long[] loginSeeds = new long[2];
+		for (int seed = 0; seed < loginSeeds.length; seed++) {
+			loginSeeds[seed] = secureBuffer.readLong();
+		}
+
+		byte[] xteaBlock = new byte[buffer.readableBytes()];
+		System.out.println("Xtea size: "+xteaBlock.length);
+		buffer.readBytes(xteaBlock);
+		XTEA xtea = new XTEA(xteaKey);
+		xtea.decrypt(xteaBlock, 0, xteaBlock.length);
+
+		InputStream xteaBuffer = new InputStream(xteaBlock);
+		
+		boolean decodeAsString = xteaBuffer.readByte() == 1;
+		String username = decodeAsString ? xteaBuffer.readString()
+				: Base37Utils.decodeBase37(xteaBuffer.readLong());
+		System.out.println("Username: "+username);
+		int displayMode = xteaBuffer.readUnsignedByte();
+		int screenWidth = xteaBuffer.readUnsignedShort();
+		int screenHeight = xteaBuffer.readUnsignedShort();
+		int unknown2 = xteaBuffer.readUnsignedByte();
+		
+		xteaBuffer.skip(24); // 24bytes directly from a file, no idea whats there
+		
+		String settings = xteaBuffer.readString();
+		int affid = xteaBuffer.readInt();
+		int indexFiles = xteaBuffer.readByte() & 0xff;
+
+		int[] crcValues = new int[indexFiles];
+		int crcCount = xteaBuffer.readUnsignedByte();
+		for (int i = 1; i < crcValues.length; i++) {
+			crcValues[i] = xteaBuffer.readUnsignedByte();
+		}
+		
+		@SuppressWarnings("unused")
+		MachineData data = new MachineData(xteaBuffer);
+		
+		xteaBuffer.readInt();// Packet receive count
+		xteaBuffer.readInt();//Unknown
+		xteaBuffer.readInt();//Unknown
+		xteaBuffer.readString();// Some param string (empty)
+		boolean hasAditionalInformation = xteaBuffer.readUnsignedByte() == 1;
+		if (hasAditionalInformation) {
+			xteaBuffer.readString(); // aditionalInformation
+		}
+		boolean hasJagtheora = xteaBuffer.readUnsignedByte() == 1;		
+		boolean js = xteaBuffer.readUnsignedByte() == 1;
+		boolean hc = xteaBuffer.readUnsignedByte() == 1;
+		int unknown4 = xteaBuffer.readByte();
+		int unknown5 = xteaBuffer.readInt();
+		
+		String serverToken = xteaBuffer.readString();
+		if (!serverToken.equals(Constants.SERVER_TOKEN)) {
+			System.out.println("Expected token: "+Constants.SERVER_TOKEN+", found: "+serverToken);
+			channel.write(new LoginResponse(LoginResponse.BAD_SESSION));
+			return null;
+		}
+		boolean unknown7 = xteaBuffer.readUnsignedByte() == 1;
+		
+		for (int index = 0; index < crcCount; index++) {
+			//int crc = CacheManager.STORE.getIndexes()[index] == null ? -1011863738 : CacheManager.STORE
+			//		.getIndexes()[index].getCRC();
+			int receivedCRC = xteaBuffer.readInt();
+			/*if (crc != receivedCRC && index < 32) {
+				Logger.log(this,
+				 "Invalid CRC at index: "+index+", "+receivedCRC+", "+crc);
+				session.getLoginPackets().sendClientPacket(6);
+				return;
+			}*/
+		}		
+		//TODO: Implement the following checks
+		/*if (Utils.invalidAccountName(username)) {
+			session.getLoginPackets().sendClientPacket(3);
+			return;
+		}
+		if (World.getPlayers().size() >= Settings.PLAYERS_LIMIT - 10) {
+			session.getLoginPackets().sendClientPacket(7);
+			return;
+		}
+		if (World.containsPlayer(username)) {
+			session.getLoginPackets().sendClientPacket(5);
+			return;
+		}
+		if (AntiFlood.getSessionsIP(session.getIP()) > 3) {
+			session.getLoginPackets().sendClientPacket(9);
+			return;
+		}*/
+		LoadResult result = null;
+		try {
+			result = BinaryPlayerManager.loadPlayer(new LoginHandshakeMessage(username, password, context));
+		} catch (IOException e) {
+			channel.write(new LoginResponse(LoginResponse.ERROR_PROFILE_LOAD));
+			return null;
+		}
+		if (result.getReturnCode() != LoginResponse.SUCCESS) {
+			channel.write(new LoginResponse(result.getReturnCode()));
+			return null;
+		}
+		Player player = result.getPlayer();
+		player.initDisplayName();
+		channel.write(new LoginConfigData(Constants.NIS_CONFIG, true));
+		return player;
+		/*player.init(session, username, displayMode, screenWidth, screenHeight, mInformation, new IsaacKeyPair(isaacKeys));
+		session.getLoginPackets().sendLoginDetails(player);
+		session.setDecoder(3, player);
+		session.setEncoder(2, player);*/
+		//player.start();
+		/*Player player;
+		if (!SerializableFilesManager.containsPlayer(username)) 
+			player = new Player(password);
+		else {
+			player = SerializableFilesManager.loadPlayer(username);
+			if (player == null) {
+				session.getLoginPackets().sendClientPacket(20);
+				return;
+			}
+			if (!SerializableFilesManager.createBackup(username)) {
+				session.getLoginPackets().sendClientPacket(20);
+				return;
+			}
+			if (!password.equals(player.getPassword())) {
+				session.getLoginPackets().sendClientPacket(3);
+				return;
+			}
+		}
+		if (player.isPermBanned() || player.getBanned() > Utils.currentTimeMillis()) {
+			session.getLoginPackets().sendClientPacket(4);
+			return;
+		}*/
+	}
+	
+	public void sendPlayerData (Player player, Channel channel, ChannelHandlerContext context) {
+		int rights = 0;
+		String displayName = player.getDisplayName();
+		int playerIndex = 20;
+		boolean isMember = true;
+		channel.write(new GameLoginData(rights, displayName, playerIndex, isMember));
 	}
 	
 	public void runLobbyLogin (ByteBuf buffer, Channel channel, ChannelHandlerContext context) {

@@ -43,34 +43,13 @@ public class LoginEncoder extends MessageToByteEncoder<LoginResponse> {
 	public void encode(ChannelHandlerContext ctx, LoginResponse msg, ByteBuf out) throws Exception {		 
 		out.writeByte(msg.getReturnCode());
 		if (msg.hasPayload()) {
-			out.writeByte(msg.getPayloadSize());
+			if (msg.isVarShort()) {
+				out.writeShort(msg.getPayloadSize());
+			} else {
+				System.out.println("Sending player data. Size="+msg.getPayloadSize());
+				out.writeByte(msg.getPayloadSize());
+			}
 			out.writeBytes(msg.getPayload());
 		}
-		/*out.writeByte(player.getReturnType());
-		if(player.getReturnCode() == 2) {
-			out.writeByte(player.getRights());
-			out.writeByte(0);
-			out.writeByte(0);
-			out.writeByte(0);
-			out.writeByte(0);
-			out.writeByte(0);
-			out.writeByte(0);
-			out.writeShort(player.getIndex());
-			out.writeByte(1);
-			out.writeByte(1);
-			out.writeByte(2);
-			out.writeByte(player.getRights());
-			out.writeByte(0);
-			out.writeByte(0);
-			out.writeByte(0);
-			out.writeByte(1);
-			out.writeByte(0);
-			out.writeShort(player.getIndex());
-			out.writeByte(1);
-			//out.write24BitInteger(0);
-			out.writeByte(1); //is member world
-			OutputStream.writeString(out, player.getDisplayName());
-			//out.endPacketVarByte();
-		}*/
 	}
 }

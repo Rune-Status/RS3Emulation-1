@@ -130,12 +130,11 @@ public class Player extends Entity {
 	 * @param returnCode
 	 * @param channelHandlerContext The channel handler context.
 	 */
-	public void login(int returnCode, ChannelHandlerContext channelHandlerContext) {				
-		channel.pipeline().addFirst(new PacketBufEncoder(), new PacketBufDecoder());
-
+	public void gameLogin(int returnCode, ChannelHandlerContext channelHandlerContext) {	
+		channel.pipeline().replace("decoder", "decoder", new PacketBufDecoder());			
+		channel.pipeline().addFirst(new PacketBufEncoder());
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
-		
 			
 		if(returnCode == 2) { 
 			Logger.getAnonymousLogger().info("Successfully registered player into world [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
