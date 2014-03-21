@@ -28,12 +28,12 @@ public class ServerContext {
 	 * The host address.
 	 */
 	private String host;
-	
+
 	/**
 	 * The port and supported client version.
 	 */
 	private int port, version;
-	
+
 	/**
 	 * Constructs a new {@code ServerContext} instance.
 	 * @param host The host of the server address.
