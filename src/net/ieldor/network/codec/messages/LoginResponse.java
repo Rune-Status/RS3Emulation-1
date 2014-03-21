@@ -68,6 +68,8 @@ public class LoginResponse {
 		this(returnCode, null, 0);
 	}
 	
+	private boolean isVarShort = false;
+	
 	/**
 	 * Constructs a new {@code LoginResponse} instance.
 	 * @param returnCode The return code.
@@ -76,9 +78,14 @@ public class LoginResponse {
 	 * @param displayName The displayname.
 	 */
 	public LoginResponse(int returnCode, ByteBuf payload, int payloadSize) {
+		this(returnCode, payload, payloadSize, false);
+	}
+	
+	public LoginResponse (int returnCode, ByteBuf payload, int payloadSize, boolean isVarShort) {
 		this.returnCode = returnCode;
 		this.payload = payload;
 		this.packetSize = payloadSize;
+		this.isVarShort = isVarShort;
 	}
 
 	/**
@@ -111,5 +118,9 @@ public class LoginResponse {
 	 */
 	 public boolean hasPayload() {
 	 	return (payload != null);
+	 }
+	 
+	 public boolean isVarShort() {
+		 return isVarShort;
 	 }
 }

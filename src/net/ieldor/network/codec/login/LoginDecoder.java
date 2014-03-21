@@ -42,7 +42,7 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 	 * An enumeration used for storing the possible states of login.
 	 */
 	public enum LoginState {
-		DECODE_HEADER, CONNECTION_TYPE, CLIENT_DETAILS, LOBBY_PAYLOAD
+		DECODE_HEADER, CONNECTION_TYPE, CLIENT_DETAILS, PLAYER_DATA, LOBBY_PAYLOAD
 	};
 
 	/**
@@ -64,16 +64,28 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 			throws Exception {
 		// System.out.println("Received login request...");
 		switch (getState()) {
-		case DECODE_HEADER:
-			return decodeHeader(ctx, buf);
-		case CONNECTION_TYPE:
-			return decodeConnectionType(buf);
-			// return decodePayload(ctx, buf);
-		case CLIENT_DETAILS:
-			return decodeClientDetails(buf);
-		case LOBBY_PAYLOAD:
-			decodeLobbyPayload(ctx, buf);
-			break;
+			case DECODE_HEADER:
+				return decodeHeader(ctx, buf);
+			case CONNECTION_TYPE:
+				return decodeConnectionType(buf);
+				// return decodePayload(ctx, buf);
+			case CLIENT_DETAILS:
+				return decodeClientDetails(buf);
+			case LOBBY_PAYLOAD:
+				decodeLobbyPayload(ctx, buf);
+				break;
+			case PLAYER_DATA:
+				return fetchPlayerData(ctx, buf);
+		}
+		return null;
+	}
+	
+	private Object fetchPlayerData (ChannelHandlerContext ctx, ByteBuf buf) {
+		System.out.println("Received request for player data...");
+		if (buf.readable()) {
+			if (buf.readByte() == 26) {
+				return new LoginPayload(LoginType.GAME, null);
+			}
 		}
 		return null;
 	}
@@ -183,6 +195,7 @@ public class LoginDecoder extends ByteToMessageDecoder<Object> {
 
 		byte[] payload = new byte[loginSize - 8];
 		buffer.readBytes(payload);
+		state = LoginState.PLAYER_DATA;
 		return new LoginPayload(currentLoginType, payload);
 		// state = currentLoginType.equals(LoginTypes.LOBBY) ?
 		// LoginState.LOBBY_PAYLOAD : LoginState.GAME_PAYLOAD;
