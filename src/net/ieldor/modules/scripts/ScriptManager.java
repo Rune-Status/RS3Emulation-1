@@ -140,7 +140,7 @@ public final class ScriptManager {
     /**
      * Loads a plugin from the specified root directory, name, and plugin data.
      */
-    private void loadPlugin(File dir, String name, Data data) throws IOException, ScriptException {
+    private void loadPlugin(File dir, String name, ScriptData data) throws IOException, ScriptException {
         /* Check if the plugin has already been loaded */
         if(loadedPlugins.contains(name)) {
             return;

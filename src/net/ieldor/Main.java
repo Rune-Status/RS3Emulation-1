@@ -37,6 +37,7 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.game.service.ServiceManager;
 import net.ieldor.modules.login.LoginManager;
 import net.ieldor.modules.login.NameManager;
+import net.ieldor.modules.scripts.ScriptManager;
 import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.ChannelChildHandler;
 import net.ieldor.ondemand.UpdateService;
@@ -94,10 +95,16 @@ public class Main {
 	 * The service manager.
 	 */
 	private final ServiceManager serviceManager;
+	
+	/**
+	 * The service manager.
+	 */
+	private final ScriptManager scriptManager = new ScriptManager();
+	
 	/**
 	 * Constructs a new {@code Main} instance.
 	 * @throws Exception 
-	 */ //he  he2
+	 */
 	public Main() throws Exception {
 		logger.info("Launching...");
 		Main.players = new CharacterRepository<Player>(2500);
@@ -157,6 +164,7 @@ public class Main {
 		checksumTable = container.encode();
 		serviceManager.startAll();
 		
+		scriptManager.load("./data/scripts/");
 		loginServer = new LoginManager();
 		loginServer.init();
 		logger.info("Initialised login server.");
