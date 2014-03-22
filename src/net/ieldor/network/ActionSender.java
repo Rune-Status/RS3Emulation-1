@@ -52,6 +52,9 @@ public class ActionSender {
 	private static final int FRIENDS_CHANNEL_PACKET = 82;
 	private static final int CLAN_CHANNEL_PACKET = 47;//795
 	
+	private static final int STATIC_MAP_REGION_PACKET = 63;//795
+	private static final int DYNAMIC_MAP_REGION_PACKET = -1;
+	
 	private static final int WINDOW_PANE_PACKET = 71;//795
 	public static final int WORLD_LIST_PACKET = 117;//795
 	private static final int MESSAGE_PACKET = 95;
@@ -266,7 +269,7 @@ public class ActionSender {
 	 * Sends the default login data.
 	 */
 	public void sendLogin() {
-		sendMapRegion();
+		sendMapRegion(true);
 		sendWindowPane(548, 0);
 		sendGameScreen();
 		sendPlayerConfig();
@@ -341,9 +344,9 @@ public class ActionSender {
 	/**
 	 * Sends the map region data for the players position.
 	 */
-	public void sendMapRegion() {
+	public void sendMapRegion(boolean isLogin) {
 		player.setLastPosition(player.getPosition());
-		PacketBuf buf = new PacketBuf(162, PacketType.SHORT);
+		PacketBuf buf = new PacketBuf(STATIC_MAP_REGION_PACKET, PacketType.SHORT);
 		boolean forceSend = true;
 		if((((player.getPosition().getRegionX() / 8) == 48) || ((player.getPosition().getRegionX() / 8) == 49)) && ((player.getPosition().getRegionY() / 8) == 48)) {
 			forceSend = false;
@@ -351,8 +354,15 @@ public class ActionSender {
 		if(((player.getPosition().getRegionX() / 8) == 48) && ((player.getPosition().getRegionY() / 8) == 148)) {
 			forceSend = false;
 		}
-		
-		buf.putShortA(player.getPosition().getLocalX());
+		if (isLogin) {
+			
+		}
+		buf.putByteC(9);//mapSize
+		buf.putByteC(isLogin ? 1 : 0);//forceRefresh
+		buf.putLEShort(player.getPosition().getRegionY());
+		buf.putShort(player.getPosition().getRegionX());
+		buf.put(0);//regionCount (number of Xteas)
+		/*buf.putShortA(player.getPosition().getLocalX());
 		for(int xCalc = (player.getPosition().getRegionX() - 6) / 8; xCalc <= ((player.getPosition().getRegionX() + 6) / 8); xCalc++) {
 			for(int yCalc = (player.getPosition().getRegionY() - 6) / 8; yCalc <= ((player.getPosition().getRegionY() + 6) / 8); yCalc++) {
 				int region = yCalc + (xCalc << 8);
@@ -370,8 +380,12 @@ public class ActionSender {
 		buf.putByteS(player.getPosition().getHeight());
 		buf.putShort(player.getPosition().getRegionX());
 		buf.putShortA(player.getPosition().getRegionY());
-		buf.putShortA(player.getPosition().getLocalY());
+		buf.putShortA(player.getPosition().getLocalY());*/
 		sendPacket(buf.toPacket());
+	}
+	
+	public void sendDynamicMapRegion (boolean isLogin) {
+		
 	}
 
 	/**

@@ -37,7 +37,7 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 		long begin = System.nanoTime();
 		
 		if(player.hasScheduledRegionChange())
-			player.getActionSender().sendMapRegion();
+			player.getActionSender().sendMapRegion(false);
 		PacketBuf packet = new PacketBuf(225, PacketType.SHORT);
 		PacketBuf block = new PacketBuf();
 		

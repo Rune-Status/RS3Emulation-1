@@ -139,7 +139,7 @@ public class Player extends Entity {
 		if(returnCode == 2) { 
 			Logger.getAnonymousLogger().info("Successfully registered player into world [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
 			actionSender.sendLogin();
-		}
+		}		
 	}
 	
 	public void setDisplayName (String displayName, String prevName) {

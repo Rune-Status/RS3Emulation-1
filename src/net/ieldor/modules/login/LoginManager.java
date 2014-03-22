@@ -234,6 +234,7 @@ public class LoginManager {
 		int playerIndex = 20;
 		boolean isMember = true;
 		channel.write(new GameLoginData(rights, displayName, playerIndex, isMember));
+		player.gameLogin(2, context);
 	}
 	
 	public void runLobbyLogin (ByteBuf buffer, Channel channel, ChannelHandlerContext context) {
