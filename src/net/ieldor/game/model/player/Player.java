@@ -28,7 +28,7 @@ import net.ieldor.game.model.Position;
 import net.ieldor.game.social.FriendManager;
 import net.ieldor.modules.login.NameManager;
 import net.ieldor.modules.login.NameManager.DisplayName;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.ActionSender;
 import net.ieldor.network.ServerChannelAdapterHandler;
@@ -74,7 +74,7 @@ public class Player extends Entity {
 	 */
 	private FriendManager friendManager = new FriendManager(this, Main.getloginServer().nameManager);
 	
-	private World currentWorld = null;
+	private WorldData currentWorld = null;
 	
 	/**
 	 * Constructs a new {@code Player} instance.
@@ -215,7 +215,7 @@ public class Player extends Entity {
 		return appearance;
 	}
 	
-	public World getWorldInfo () {
+	public WorldData getWorldInfo () {
 		return currentWorld;
 	}
 }

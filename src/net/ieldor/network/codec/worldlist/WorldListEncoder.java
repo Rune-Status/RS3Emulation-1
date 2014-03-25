@@ -21,7 +21,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import net.ieldor.modules.worldlist.Country;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 import net.ieldor.network.codec.messages.WorldListMessage;
 import net.ieldor.utility.ByteBufUtils;
 
@@ -56,11 +56,11 @@ public class WorldListEncoder extends MessageToByteEncoder<WorldListMessage> {
 			ByteBufUtils.writeWorldListString(buf, country.getName());
 		}
 
-		World[] worlds = list.getWorlds();
+		WorldData[] worlds = list.getWorlds();
 		int minId = worlds[0].getNodeId();
 		int maxId = worlds[0].getNodeId();
 		for (int i = 1; i < worlds.length; i++) {
-			World world = worlds[i];
+			WorldData world = worlds[i];
 			int id = world.getNodeId();
 
 			if (id > maxId)
@@ -73,7 +73,7 @@ public class WorldListEncoder extends MessageToByteEncoder<WorldListMessage> {
 		ByteBufUtils.writeSmart(buf, maxId);
 		ByteBufUtils.writeSmart(buf, worlds.length);
 
-		for (World world : worlds) {
+		for (WorldData world : worlds) {
 			ByteBufUtils.writeSmart(buf, world.getNodeId() - minId);
 			buf.writeByte(world.getCountry().getFlag());
 			buf.writeInt(world.getFlags());
@@ -84,7 +84,7 @@ public class WorldListEncoder extends MessageToByteEncoder<WorldListMessage> {
 		buf.writeInt(list.getSessionId());
 
 		for (int i = 0; i < worlds.length; i++) {
-			World world = worlds[i];
+			WorldData world = worlds[i];
 			ByteBufUtils.writeSmart(buf, world.getNodeId() - minId);
 			buf.writeShort(0);
 		}

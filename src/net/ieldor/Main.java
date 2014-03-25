@@ -99,7 +99,7 @@ public class Main {
 	/**
 	 * The service manager.
 	 */
-	private final ScriptManager scriptManager = new ScriptManager();
+	//private final ScriptManager scriptManager = new ScriptManager();
 	
 	/**
 	 * Constructs a new {@code Main} instance.
@@ -164,7 +164,7 @@ public class Main {
 		checksumTable = container.encode();
 		serviceManager.startAll();
 		
-		scriptManager.load("./data/scripts/");
+		//scriptManager.load("./data/scripts/");
 		loginServer = new LoginManager();
 		loginServer.init();
 		logger.info("Initialised login server.");

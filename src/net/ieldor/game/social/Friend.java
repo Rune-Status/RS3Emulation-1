@@ -16,7 +16,7 @@
  */
 package net.ieldor.game.social;
 
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 
 /**
  * An {@link Object} that represents a player's friend
@@ -28,7 +28,7 @@ public class Friend {
 	public final String username;
 	private String currentName;
 	private String previousName;
-	private World currentWorld = null;
+	private WorldData currentWorld = null;
 	private int friendsChatRank = 0;
 	private boolean isReferred = false;
 	private String note = "";
@@ -49,7 +49,7 @@ public class Friend {
 		this.previousName = previous;
 	}
 	
-	public void setWorld (World world) {
+	public void setWorld (WorldData world) {
 		this.currentWorld = world;
 	}
 	
@@ -69,7 +69,7 @@ public class Friend {
 		return previousName;
 	}
 	
-	public World getWorld () {
+	public WorldData getWorld () {
 		return currentWorld;
 	}
 	

@@ -25,16 +25,16 @@ import java.util.HashMap;
  * @author Sundays211
  */
 public class WorldList {
-	public static final HashMap<Integer, World> WORLDS = new HashMap<Integer, World>();
+	public static final HashMap<Integer, WorldData> WORLDS = new HashMap<Integer, WorldData>();
 	public static HashMap<Integer, Integer> playerCounts = new HashMap<Integer, Integer>();
 	
-	public static final World DEFAULT_WORLD 
-		= new World(2, "World 2", World.FLAG_MEMBERS | World.FLAG_LOOT_SHARE, Country.USA, "Default", "127.0.0.1", ServerLocation.US_EAST_1);
-	public static final World LOBBY = new World(1100, "Lobby", 0, Country.USA, "", "127.0.0.1", ServerLocation.US_EAST_1);
+	public static final WorldData DEFAULT_WORLD 
+		= new WorldData(2, "World 2", WorldData.FLAG_MEMBERS | WorldData.FLAG_LOOT_SHARE, Country.USA, "Default", "127.0.0.1", ServerLocation.US_EAST_1);
+	public static final WorldData LOBBY = new WorldData(1100, "Lobby", 0, Country.USA, "", "127.0.0.1", ServerLocation.US_EAST_1);
 
 	
 	public static void init () {
-		WORLDS.put(1, new World(1, "World 1", World.FLAG_MEMBERS, Country.UK, "Test", "127.0.0.1", ServerLocation.UK));
+		WORLDS.put(1, new WorldData(1, "World 1", WorldData.FLAG_MEMBERS, Country.UK, "Test", "127.0.0.1", ServerLocation.UK));
 		playerCounts.put(1, 10);
 		WORLDS.put(2, DEFAULT_WORLD);
 		playerCounts.put(2, 20);

@@ -17,7 +17,7 @@
 package net.ieldor.network.codec.messages;
 
 import net.ieldor.game.model.player.Player;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 
 /**
  * RS3Emulator
@@ -40,7 +40,7 @@ public class LobbyLoginData {
 	public final int defaultWorldNodeID;
 	
 	public LobbyLoginData (int rights, long memberEndDate, int memberFlags, int lastLoginDay, int recoverySetDay, 
-			int msgCount, String loginIP, int emailStatus, String displayName, World defaultWorld) {
+			int msgCount, String loginIP, int emailStatus, String displayName, WorldData defaultWorld) {
 		this.rights = rights;
 		this.membershipEndDate = memberEndDate;
 		this.membershipFlags = memberFlags;

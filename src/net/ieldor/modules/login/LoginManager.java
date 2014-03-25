@@ -28,7 +28,7 @@ import net.ieldor.Constants;
 import net.ieldor.game.model.player.LoadResult;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.io.InputStream;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.codec.login.LoginConfigData;
 import net.ieldor.network.codec.messages.GameLoginData;
@@ -358,7 +358,7 @@ public class LoginManager {
 		String loginIp = null;
 		int emailStatus = 3;//email status (0 - no email, 1 - pending parental confirmation, 2 - pending confirmation, 3 - registered)
 		String displayName = player.getDisplayName();		
-		World defaultWorld = WorldList.DEFAULT_WORLD;
+		WorldData defaultWorld = WorldList.DEFAULT_WORLD;
 		
 		LobbyLoginData lobbyData = new LobbyLoginData(rights, memberEndDate, memberFlags, lastLoginDay,
 				recoverySetDay, msgCount, loginIp, emailStatus, displayName, defaultWorld);

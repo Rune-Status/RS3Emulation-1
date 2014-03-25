@@ -87,9 +87,14 @@ public class ServerChannelAdapterHandler extends ChannelInboundMessageHandlerAda
 	 */
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
-		t.printStackTrace();
-		if (ctx.channel().isOpen())
+		//t.printStackTrace();
+		if (ctx.channel().isOpen()) {
+			try {
 			  ctx.channel().close();
+			} catch (Exception e) {
+				System.err.println("Failed to close channel: "+e.getMessage());//Ignore the full stack trace (this floods the command window)
+			}
+		}
 	}
 	
 	/*

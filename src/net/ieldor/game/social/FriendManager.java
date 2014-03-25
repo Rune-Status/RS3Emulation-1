@@ -28,7 +28,7 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.modules.login.BinaryPlayerManager.StreamUtil;
 import net.ieldor.modules.login.NameManager;
 import net.ieldor.modules.login.NameManager.DisplayName;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 
 /**
  * The tools necessary to control a player's friends list, ignore list, and private messaging. 
@@ -52,7 +52,7 @@ public class FriendManager {
 	
 	private OnlineStatus onlineStatus = OnlineStatus.NOBODY;
 	
-	private World currentWorld = null;
+	private WorldData currentWorld = null;
 	
 	public FriendManager (Player player, NameManager nameManager) {
 		this.player = player;
@@ -151,7 +151,7 @@ public class FriendManager {
 		return onlineStatus;
 	}
 	
-	public World getWorldInfo (FriendManager friend) {
+	public WorldData getWorldInfo (FriendManager friend) {
 		if (onlineStatus == OnlineStatus.EVERYONE) {
 			return currentWorld;
 		} else if (onlineStatus == OnlineStatus.FRIENDS 
@@ -162,7 +162,7 @@ public class FriendManager {
 		}
 	}
 	
-	private World getFriendWorld (String friendUsername) {
+	private WorldData getFriendWorld (String friendUsername) {
 		if (!onlinePlayers.containsKey(NameManager.simplifyName(friendUsername))) {
 			return null;
 		} else {

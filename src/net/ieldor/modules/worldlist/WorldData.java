@@ -1,6 +1,6 @@
 package net.ieldor.modules.worldlist;
 
-public final class World {
+public final class WorldData {
 
 	public static final int FLAG_MEMBERS    = 0x1;
 	public static final int FLAG_QUICK_CHAT = 0x2;
@@ -13,7 +13,7 @@ public final class World {
 	private final Country country;
 	private final ServerLocation location;
 
-	public World(int id, String name, int flags, Country country, String activity, String ip, ServerLocation location) {
+	public WorldData(int id, String name, int flags, Country country, String activity, String ip, ServerLocation location) {
 		this.id = id;
 		this.name = name;
 		this.flags = flags;

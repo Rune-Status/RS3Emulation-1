@@ -1,16 +1,16 @@
 package net.ieldor.network.codec.messages;
 
 import net.ieldor.modules.worldlist.Country;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 
 public final class WorldListMessage {
 
 	private final int sessionId;
 	private final Country[] countries;
-	private final World[] worlds;
+	private final WorldData[] worlds;
 	private final int[] players;
 
-	public WorldListMessage(int sessionId, Country[] countries, World[] worlds, int[] players) {
+	public WorldListMessage(int sessionId, Country[] countries, WorldData[] worlds, int[] players) {
 		this.sessionId = sessionId;
 		this.countries = countries;
 		this.worlds = worlds;
@@ -25,7 +25,7 @@ public final class WorldListMessage {
 		return countries;
 	}
 
-	public World[] getWorlds() {
+	public WorldData[] getWorlds() {
 		return worlds;
 	}
 

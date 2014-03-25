@@ -28,7 +28,7 @@ import net.ieldor.game.social.OnlineStatus;
 import net.ieldor.io.Packet;
 import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 import net.ieldor.utility.BinaryLandscapeHandler;
 
 /**
@@ -52,8 +52,8 @@ public class ActionSender {
 	private static final int FRIENDS_CHANNEL_PACKET = 82;
 	private static final int CLAN_CHANNEL_PACKET = 47;//795
 	
-	private static final int STATIC_MAP_REGION_PACKET = 63;//795
-	private static final int DYNAMIC_MAP_REGION_PACKET = -1;
+	private static final int STATIC_MAP_REGION_PACKET = 107;//795
+	private static final int DYNAMIC_MAP_REGION_PACKET = 63;//795
 	
 	private static final int WINDOW_PANE_PACKET = 71;//795
 	public static final int WORLD_LIST_PACKET = 117;//795
@@ -205,7 +205,7 @@ public class ActionSender {
 	 * @param packet		The packet in which to write the friend details
 	 */
 	public void packFriend(Friend friend, boolean isNameChange, PacketBuf packet) {
-		World world = friend.getWorld();
+		WorldData world = friend.getWorld();
 		boolean putOnline = (world != null);
 		int flags = 0;
 		/*if (friend.isRecruited()) {
@@ -270,11 +270,11 @@ public class ActionSender {
 	 */
 	public void sendLogin() {
 		sendMapRegion(true);
-		sendWindowPane(548, 0);
-		sendGameScreen();
-		sendPlayerConfig();
-		sendMessage("Welcome to Ieldor.");
-		sendMessage("Ieldor is currently in the BETA stage.");
+		sendWindowPane(1477, 0);
+		//sendGameScreen();
+		//sendPlayerConfig();
+		//sendMessage("Welcome to Ieldor.");
+		//sendMessage("Ieldor is currently in the BETA stage.");
 	}
 
 	/**
@@ -355,7 +355,15 @@ public class ActionSender {
 			forceSend = false;
 		}
 		if (isLogin) {
-			
+			buf.switchToBitAccess();
+			buf.putBits(30, player.getPosition().hashCode());
+			for (int index = 1;index<2048;index++) {
+				if (index == player.getIndex()) {
+					continue;
+				}
+				buf.putBits(18, 0);//TODO: Replace this with the region hash of other players
+			}
+			buf.switchToByteAccess();
 		}
 		buf.putByteC(9);//mapSize
 		buf.putByteC(isLogin ? 1 : 0);//forceRefresh

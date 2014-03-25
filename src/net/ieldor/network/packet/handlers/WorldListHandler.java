@@ -22,7 +22,7 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
 import net.ieldor.modules.worldlist.ServerLocation;
-import net.ieldor.modules.worldlist.World;
+import net.ieldor.modules.worldlist.WorldData;
 import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.ActionSender;
 import net.ieldor.network.packet.PacketHandler;
@@ -61,7 +61,7 @@ public class WorldListHandler implements PacketHandler<WorldListContext> {
 			buf.putSmart(worldListSize + 1);
 			buf.putSmart(worldListSize);
 			
-			for (World world : WorldList.WORLDS.values()) {
+			for (WorldData world : WorldList.WORLDS.values()) {
 				buf.putSmart(world.getNodeId());//World node ID
 				buf.put(world.getServerLocation().getID());//Physical location 
 				

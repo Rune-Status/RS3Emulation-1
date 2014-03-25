@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 import net.ieldor.game.model.masks.UpdateMask;
 import net.ieldor.game.model.player.Player;
+import net.ieldor.game.model.region.Region;
 
 /**
  * Represents either an Mob (eg: Skeleton, Spider, Dwarf) or a Player
@@ -42,6 +43,11 @@ public class Entity {
 	 * The position of the entity.
 	 */
 	private Position position, lastPosition;
+	
+	/**
+	 * The region of the entity.
+	 */
+	private Region currentRegion;
 	
 	/**
 	 * The directions of walking and running.
@@ -157,6 +163,22 @@ public class Entity {
 	}
 
 	/**
+	 * Gets the current region
+	 * @return the region
+	 */
+	public Region getCurrentRegion() {
+		return currentRegion;
+	}
+
+	/**
+	 * Sets the current region
+	 * @param currentRegion the region to set to
+	 */
+	public void setCurrentRegion(Region currentRegion) {
+		this.currentRegion = currentRegion;
+	}
+
+	/**
 	 * Gets the position.
 	 * @return the position
 	 */
@@ -186,6 +208,14 @@ public class Entity {
 	 */
 	public void setIndex(int index) {
 		this.index = index;
+	}
+	
+	/**
+	 * Checks if the entity is active
+	 * @return true if active, false otherwise
+	 */
+	public boolean isActive() {
+		return index != -1;
 	}
 	
 	/**
