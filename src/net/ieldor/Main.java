@@ -26,17 +26,20 @@ import io.netty.handler.logging.LoggingHandler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.ieldor.cache.Cache;
 import net.ieldor.cache.Container;
 import net.ieldor.cache.FileStore;
+import net.ieldor.game.World;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.service.ServiceManager;
 import net.ieldor.modules.login.LoginManager;
-import net.ieldor.modules.login.NameManager;
 import net.ieldor.modules.scripts.ScriptManager;
 import net.ieldor.modules.worldlist.WorldList;
 import net.ieldor.network.ChannelChildHandler;
@@ -64,7 +67,7 @@ public class Main {
 	/**
 	 * The default logging instance.
 	 */
-	private static final Logger logger = Logger.getLogger(Main.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
 	/**
 	 * The update service for incoming requests.
@@ -90,6 +93,11 @@ public class Main {
 	 * The {@link CharacterRepository} for storing players.
 	 */
 	private static CharacterRepository<Player> players;
+	
+	/**
+	 * An {@link ArrayList} of all worlds hosted on this server.
+	 */
+	private static ArrayList<World> worlds;
 
 	/**
 	 * The service manager.
@@ -99,7 +107,7 @@ public class Main {
 	/**
 	 * The service manager.
 	 */
-	//private final ScriptManager scriptManager = new ScriptManager();
+	private final ScriptManager scriptManager = new ScriptManager();
 	
 	/**
 	 * Constructs a new {@code Main} instance.
@@ -109,6 +117,7 @@ public class Main {
 		logger.info("Launching...");
 		Main.players = new CharacterRepository<Player>(2500);
 		serviceManager = new ServiceManager();
+		worlds = new ArrayList<World>();
 	}
 
 	/**
@@ -169,6 +178,17 @@ public class Main {
 		loginServer.init();
 		logger.info("Initialised login server.");
 		WorldList.init();
+		
+	    worlds.add(World.getLobby());
+	    worlds.add(World.getDefaultWorld());
+	}
+	
+
+	/**
+	 * @return the logger
+	 */
+	public static Logger getLogger() {
+		return logger;
 	}
 
 
@@ -178,6 +198,14 @@ public class Main {
 	 */
 	public static CharacterRepository<Player> getPlayers() {
 		return players;
+	}
+	
+	/**
+	 * Gets the worlds currently hosted on this server
+	 * @return	An ArrayList of worlds
+	 */
+	public static ArrayList<World> getWorlds () {
+		return worlds;
 	}
 	
 	/**

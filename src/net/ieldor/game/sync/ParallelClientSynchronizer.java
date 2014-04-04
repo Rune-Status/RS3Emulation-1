@@ -1,3 +1,19 @@
+/*
+ * This file is part of Ieldor.
+ *
+ * Ieldor is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Ieldor is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Ieldor.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package net.ieldor.game.sync;
 
 import java.util.concurrent.ExecutorService;
@@ -6,6 +22,7 @@ import java.util.concurrent.Phaser;
 import java.util.concurrent.ThreadFactory;
 
 import net.ieldor.Main;
+import net.ieldor.game.World;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.sync.task.PhasedSynchronizationTask;
 import net.ieldor.game.sync.task.PlayerSynchronizationTask;
@@ -49,29 +66,34 @@ public final class ParallelClientSynchronizer extends ClientSynchronizer {
 
 	@Override
 	public void synchronize() {
-		CharacterRepository<Player> players = Main.getPlayers();
-		int playerCount = players.size();
-
-		phaser.bulkRegister(playerCount);
-		for (Player player : players) {
-			SynchronizationTask task = new PrePlayerSynchronizationTask(player);
-			executor.submit(new PhasedSynchronizationTask(phaser, task));
+		for (World world : Main.getWorlds()) {
+			if (!world.isGame()) {
+				continue;//Process is only needed for game worlds
+			}
+			CharacterRepository<Player> players = world.getPlayers();//Main.getPlayers();
+			int playerCount = players.size();
+	
+			phaser.bulkRegister(playerCount);
+			for (Player player : players) {
+				SynchronizationTask task = new PrePlayerSynchronizationTask(player);
+				executor.submit(new PhasedSynchronizationTask(phaser, task));
+			}
+			phaser.arriveAndAwaitAdvance();
+	
+			phaser.bulkRegister(playerCount);
+			for (Player player : players) {
+				SynchronizationTask task = new PlayerSynchronizationTask(player);
+				executor.submit(new PhasedSynchronizationTask(phaser, task));
+			}
+			phaser.arriveAndAwaitAdvance();
+	
+			phaser.bulkRegister(playerCount);
+			for (Player player : players) {
+				SynchronizationTask task = new PostPlayerSynchronizationTask(player);
+				executor.submit(new PhasedSynchronizationTask(phaser, task));
+			}
+			phaser.arriveAndAwaitAdvance();
 		}
-		phaser.arriveAndAwaitAdvance();
-
-		phaser.bulkRegister(playerCount);
-		for (Player player : players) {
-			SynchronizationTask task = new PlayerSynchronizationTask(player);
-			executor.submit(new PhasedSynchronizationTask(phaser, task));
-		}
-		phaser.arriveAndAwaitAdvance();
-
-		phaser.bulkRegister(playerCount);
-		for (Player player : players) {
-			SynchronizationTask task = new PostPlayerSynchronizationTask(player);
-			executor.submit(new PhasedSynchronizationTask(phaser, task));
-		}
-		phaser.arriveAndAwaitAdvance();
 	}
 
 }

@@ -21,6 +21,7 @@ import java.util.List;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import net.ieldor.Constants;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.social.Friend;
 import net.ieldor.game.social.Ignore;
@@ -54,10 +55,16 @@ public class ActionSender {
 	
 	private static final int STATIC_MAP_REGION_PACKET = 107;//795
 	private static final int DYNAMIC_MAP_REGION_PACKET = 63;//795
+	public static final int PLAYER_UPDATE_PACKET = 40;//795
 	
+	private static final int PLAYER_OPTION_PACKET = 120;//795
+	private static final int RUN_ENERGY_PACKET = 13;//795
+	
+	private static final int INTERFACE_PACKET = 41;//795
 	private static final int WINDOW_PANE_PACKET = 71;//795
+	
 	public static final int WORLD_LIST_PACKET = 117;//795
-	private static final int MESSAGE_PACKET = 95;
+	private static final int MESSAGE_PACKET = 17;//795
 	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;
 	
 
@@ -114,6 +121,29 @@ public class ActionSender {
 		buf.putShortA(id);
 		buf.putInt(xteas[1]);
 		buf.putInt(xteas[3]);
+		sendPacket(buf.toPacket());
+	}
+	
+	/**
+	 * Sends an interface to a specified window.
+	 * @param show The show id.
+	 * @param window The window id.
+	 * @param inter The interface id.
+	 * @param child The child id.
+	 */
+	private void sendInterface(boolean clipped, int windowID, int windowComponent, int interfaceID) {
+		//NOTE: The order and encoding methods of this packet vary between client revisions
+		int[] xteas = new int[4];
+		
+		PacketBuf buf = new PacketBuf(INTERFACE_PACKET);
+		buf.putInt(xteas[3]);
+		buf.putInt1(xteas[2]);
+		buf.putLEShort(interfaceID);//Interface ID
+		buf.putLEInt(xteas[0]);
+		buf.putInt2(xteas[1]);
+		buf.putByteC(clipped ? 1 : 0);//Clipped
+		buf.putInt1(windowID << 16 | windowComponent);//Parent hash
+		
 		sendPacket(buf.toPacket());
 	}
 
@@ -264,38 +294,108 @@ public class ActionSender {
 		packet.putString(ignore.getPreviousName());
 		packet.putString(ignore.getNote());
 	}
+
+	/**
+	 * Sends a game message to the player
+	 * @param message	The message to send
+	 * @param filtered Whether or not the message can be filtered via the game filter
+	 */
+	public void sendGameMessage(String message, boolean filtered) {
+		sendMessage(message, (filtered ? MessageOpcode.GAME_FILTERED : MessageOpcode.GAME_UNFILTERED), null);
+	}
+	
+	public void sendMessage(String message, MessageOpcode opcode, Player sender) {
+		PacketBuf buf = new PacketBuf(MESSAGE_PACKET, PacketType.BYTE);
+		buf.putSmart(opcode.getOpcode());
+		buf.putInt(0);//Purpose unknown
+		int mask = 0;
+		if (sender != null) {
+			mask |= 0x1;
+			if (sender.hasDifferentDisplayName()) {
+				mask |= 0x2;
+			}
+		}
+		buf.put(mask);
+		if (sender != null) {
+			buf.putString(sender.getDisplayName());
+			if (sender.hasDifferentDisplayName()) {
+				buf.putString(sender.getDisplayName());//TODO: Use player titles
+			}
+		}
+		buf.putString(message);
+		player.getChannel().write(buf.toPacket());
+	}
 	
 	/**
 	 * Sends the default login data.
 	 */
 	public void sendLogin() {
 		sendMapRegion(true);
+		player.sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
 		sendWindowPane(1477, 0);
-		//sendGameScreen();
-		//sendPlayerConfig();
-		//sendMessage("Welcome to Ieldor.");
+		sendGameScreen();
+		sendDefaultPlayersOptions();
+		sendRunEnergy();
+		sendGameMessage("Welcome to Ieldor.", false);
 		//sendMessage("Ieldor is currently in the BETA stage.");
+		player.getFriendManager().init();
 	}
 
 	/**
-	 * Sends the player configuration.
+	 * Sends the default options for other players
 	 */
-	private void sendPlayerConfig() {		
-		this.sendEnergy();
-		this.sendOnlineStatus(OnlineStatus.NOBODY);
+	private void sendDefaultPlayersOptions() {		
+		sendPlayerOption("Follow", 2, false);
+		sendPlayerOption("Trade with", 4, false);
 	}
 
 	/**
 	 * Sends the game screen.
 	 */
-	private void sendGameScreen() {
-		sendTab(14, 751); // Chat options
+	private void sendGameScreen() {		
+		sendInterface(true, 1477, 85, 1482);//id=1482, clipped=1, target=[1477, 85]
+		sendInterface(true, 1477, 59, 1466);//id=1466, clipped=1, target=[1477, 59]
+		sendInterface(true, 1477, 39, 1220);//id=1220, clipped=1, target=[1477, 39] (Active task)
+		//sendInterface(true, 1477, 130, 1473);//id=1473, clipped=1, target=[1477, 130] (Inventory)
+		sendInterface(true, 1477, 202, 1464);//id=1464, clipped=1, target=[1477, 202]
+		//sendInterface(true, 1477, 69, 1458);//id=1458, clipped=1, target=[1477, 69] (Prayer points)
+		//sendInterface(true, 1477, 241, 1460);//id=1460, clipped=1, target=[1477, 241] 
+		//sendInterface(true, 1477, 251, 1452);//id=1452, clipped=1, target=[1477, 251]
+		//sendInterface(true, 1477, 5, 1461);//id=1461, clipped=1, target=[1477, 5]
+		//sendInterface(true, 1477, 15, 1449);//id=1449, clipped=1, target=[1477, 15]
+		sendInterface(true, 1477, 117, 550);//id=550, clipped=1, target=[1477, 117] (Friends list)
+		//sendInterface(true, 1477, 92, 1427);//id=1427, clipped=1, target=[1477, 92] (Friends chat)
+		//sendInterface(true, 1477, 107, 1110);//id=1110, clipped=1, target=[1477, 107] (Clan chat)
+		//sendInterface(true, 1477, 49, 590);//id=590, clipped=1, target=[1477, 49]
+		//sendInterface(true, 1477, 87, 1416);//id=1416, clipped=1, target=[1477, 87] (Music player)
+		sendInterface(true, 1477, 97, 1417);//id=1417, clipped=1, target=[1477, 97] (Notes)
+		sendInterface(true, 1477, 174, 1431);//id=1431, clipped=1, target=[1477, 174] (Launcher bar (links to settings, social, powers, etc))
+		sendInterface(true, 1477, 57, 1430);//id=1430, clipped=1, target=[1477, 57] (Action bar)
+		sendInterface(true, 1477, 59, 1465);//id=1465, clipped=1, target=[1477, 59] (Minimap)
+		sendInterface(true, 1477, 33, 1433);//id=1433, clipped=1, target=[1477, 33] (Settings menu)
+		sendInterface(true, 1477, 136, 1483);//id=1483, clipped=1, target=[1477, 136] (Grave timer)
+		sendInterface(true, 1477, 155, 745);//id=745, clipped=1, target=[1477, 155] (Assisting interface)
+		//sendInterface(true, 1477, 132, 1485);//id=1485, clipped=1, target=[1477, 132] 
+		sendInterface(true, 1477, 0, 1213);//id=1213, clipped=1, target=[1477, 0] (Skill popups)
+		//sendInterface(true, 1477, 74, 1448);//id=1448, clipped=1, target=[1477, 74]
+		sendInterface(true, 1477, 66, 557);//id=557, clipped=1, target=[1477, 66] (Current task)
+		sendInterface(true, 1477, 106, 137);//id=137, clipped=1, target=[1477, 106] (Chat box)
+		//sendInterface(true, 1477, 178, 1467);//id=1467, clipped=1, target=[1477, 178] (Another chat box)
+		//sendInterface(true, 1477, 186, 1472);//id=1472, clipped=1, target=[1477, 186] (Another chat box)
+		//sendInterface(true, 1477, 194, 1471);//id=1471, clipped=1, target=[1477, 194] (Another chat box)
+		//sendInterface(true, 1477, 79, 1470);//id=1470, clipped=1, target=[1477, 79] (Another chat box)
+		//sendInterface(true, 1477, 58, 464);//id=464, clipped=1, target=[1477, 58] (Another chat box)
+		//sendInterface(true, 1477, 222, 182);//id=182, clipped=1, target=[1477, 222]
+		//sendInterface(true, 1477, 37, 1488);//id=1488, clipped=1, target=[1477, 37]
+		//sendInterface(true, 1477, 159, 669);//id=669, clipped=1, target=[1477, 159] (Information box)
+		sendInterface(true, 1477, 21, 1215);//id=1215, clipped=1, target=[1477, 21] (Experience counter)
+		/*sendTab(14, 751); // Chat options
 		sendTab(75, 752); // Chatbox
 		sendTab(70, 748); // HP bar
 		sendTab(71, 749); // Prayer bar
 		sendTab(72, 750); // Energy bar
 		sendTab(67, 747); // Summoning bar
-		sendInterface(1, 752, 8, 137); // Username on chat
+		sendInterface(true, 752, 8, 137); // Username on chat
 		sendTab(83, 92); // Attack tab
 		sendTab(84, 320); // Skill tab
 		sendTab(85, 274); // Quest tab
@@ -310,7 +410,7 @@ public class ActionSender {
 		sendTab(95, 464); // Emote tab
 		sendTab(96, 187); // Music tab
 		sendTab(97, 182); // Logout tab
-		sendTab(10, 754); // PM split chat		
+		sendTab(10, 754); // PM split chat	*/
 	}
 
 	/**
@@ -318,28 +418,9 @@ public class ActionSender {
 	 * @param tab The tab id.
 	 * @param child The child id.
 	 */
-	private void sendTab(int tab, int child) {
-		sendInterface(1, child == 137 ? 752 : 548, tab, child);
-	}
-
-	/**
-	 * Sends an interface to a specified window.
-	 * @param show The show id.
-	 * @param window The window id.
-	 * @param inter The interface id.
-	 * @param child The child id.
-	 */
-	private void sendInterface(int show, int window, int inter, int child) {
-		int id = window * 65536 + inter;	
-		
-		PacketBuf buf = new PacketBuf(155);
-		buf.put((byte) show);
-		buf.putInt2(id);
-		buf.putShortA(interfaceCount++);
-		buf.putShort(child);
-		
-		sendPacket(buf.toPacket());
-	}
+	/*private void sendTab(int tab, int child) {
+		sendInterface(true, child == 137 ? 752 : 548, tab, child);
+	}*/
 
 	/**
 	 * Sends the map region data for the players position.
@@ -355,21 +436,14 @@ public class ActionSender {
 			forceSend = false;
 		}
 		if (isLogin) {
-			buf.switchToBitAccess();
-			buf.putBits(30, player.getPosition().hashCode());
-			for (int index = 1;index<2048;index++) {
-				if (index == player.getIndex()) {
-					continue;
-				}
-				buf.putBits(18, 0);//TODO: Replace this with the region hash of other players
-			}
-			buf.switchToByteAccess();
+			player.getPlayerUpdater().init(buf);
 		}
-		buf.putByteC(9);//mapSize
+		buf.putByteC(0);//mapSize
 		buf.putByteC(isLogin ? 1 : 0);//forceRefresh
 		buf.putLEShort(player.getPosition().getRegionY());
 		buf.putShort(player.getPosition().getRegionX());
-		buf.put(0);//regionCount (number of Xteas)
+		System.out.println("mapSize=0, posX="+player.getPosition().getRegionX()+", posY="+player.getPosition().getRegionY());
+		buf.put(Constants.MAP_SIZES[0]);//regionCount (number of Xteas)
 		/*buf.putShortA(player.getPosition().getLocalX());
 		for(int xCalc = (player.getPosition().getRegionX() - 6) / 8; xCalc <= ((player.getPosition().getRegionX() + 6) / 8); xCalc++) {
 			for(int yCalc = (player.getPosition().getRegionY() - 6) / 8; yCalc <= ((player.getPosition().getRegionY() + 6) / 8); yCalc++) {
@@ -393,7 +467,12 @@ public class ActionSender {
 	}
 	
 	public void sendDynamicMapRegion (boolean isLogin) {
-		
+		//TODO: Complete this.
+	}
+	
+	public void sendPlayerUpdates () {
+		Packet packet = player.getPlayerUpdater().makePacket();
+		sendPacket(packet);
 	}
 
 	/**
@@ -462,36 +541,37 @@ public class ActionSender {
 	}*/
 
 	/**
-	 * Sends a message to a player.
-	 * @param message the message to send.
-	 */
-	public void sendMessage(String message) {
-		PacketBuf buf = new PacketBuf(70, PacketType.BYTE);
-		buf.putString(message);
-		player.getChannel().write(buf.toPacket());
-	}
-
-	/**
 	 * Sends the run energy.
 	 */
-	public void sendEnergy() {
-		PacketBuf buf = new PacketBuf(234);
+	public void sendRunEnergy() {
+		PacketBuf buf = new PacketBuf(RUN_ENERGY_PACKET);
 		buf.put(player.getRunEnergy());
 		player.getChannel().write(buf.toPacket());
 	}
 	
 	/**
 	 * Sends a player option.
-	 * @param option The option.
-	 * @param slot The slot.
-	 * @param position The position.
+	 * @param option	The option string
+	 * @param slot		The option slot ID
+	 * @param top		Whether the option should be at the top
 	 */
-	public void sendPlayerOption(String option, int slot, int position) {
-		PacketBuf buf = new PacketBuf(44, PacketType.BYTE);
-		buf.putLEShortA(65535);
-		buf.put(position);
-		buf.put(slot);
+	public void sendPlayerOption (String option, int slot, boolean top) {
+		sendPlayerOption(option, slot, top, -1);
+	}
+	
+	/**
+	 * Sends a player option.
+	 * @param option	The option string
+	 * @param slot		The option slot ID
+	 * @param top		Whether the option should be at the top
+	 * @param cursor	The cursor sprite ID to use
+	 */
+	public void sendPlayerOption(String option, int slot, boolean top, int cursor) {
+		PacketBuf buf = new PacketBuf(PLAYER_OPTION_PACKET, PacketType.BYTE);
 		buf.putString(option);
+		buf.put(top ? 1 : 0);//isOnTop
+		buf.putByteC(slot);
+		buf.putLEShort(cursor);//Cursor
 		player.getChannel().write(buf.toPacket());
 	}
 	
@@ -540,7 +620,7 @@ public class ActionSender {
 	 * @param childId The child id.
 	 */
 	public void sendChatboxInterface(int childId) {
-		sendInterface(0, 752, 11, childId);
+		sendInterface(false, 752, 11, childId);
 	}
 	
 	/**
@@ -565,6 +645,6 @@ public class ActionSender {
 	 * @param interfaceId The interface id.
 	 */
 	public void sendInterface(int interfaceId) {
-    	sendInterface(0, 548, 11, interfaceId);		
+    	sendInterface(false, 1477, 11, interfaceId);		
 	}
 }

@@ -10,6 +10,7 @@ import net.ieldor.game.model.masks.UpdateMask;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.io.Packet.PacketType;
 import net.ieldor.io.PacketBuf;
+import net.ieldor.network.ActionSender;
 
 /**
  * Performs the player updating procedure.
@@ -35,10 +36,12 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 	@Override
 	public void run() {
 		long begin = System.nanoTime();
-		
-		if(player.hasScheduledRegionChange())
+		System.out.println("Sending player updates to: "+player);
+		player.getActionSender().sendPlayerUpdates();
+		/*if(player.hasScheduledRegionChange()) {
 			player.getActionSender().sendMapRegion(false);
-		PacketBuf packet = new PacketBuf(225, PacketType.SHORT);
+		}
+		PacketBuf packet = new PacketBuf(ActionSender.PLAYER_UPDATE_PACKET, PacketType.SHORT);
 		PacketBuf block = new PacketBuf();
 		
 		packet.switchToBitAccess();
@@ -79,7 +82,7 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 		packet.switchToByteAccess();
 		if(block.getLength() > 0)
 			packet.getPayload().writeBytes(block.getPayload());
-		player.getChannel().write(packet.toPacket());
+		player.getChannel().write(packet.toPacket());*/
 		
 		long end = System.nanoTime();
 		

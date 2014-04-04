@@ -16,6 +16,8 @@
  */
 package net.ieldor.game.model.player;
 
+import net.ieldor.io.PacketBuf;
+
 /**
  * Represents the appearance (or looks) of an {@link Player}. 
  *
@@ -42,7 +44,7 @@ public class Appearance {
 	/**
 	 * The gender of the player.
 	 */
-	private int gender = 0;
+	private boolean male = true;
 	
 	/**
 	 * Constructs a new Appearance instance.
@@ -62,6 +64,60 @@ public class Appearance {
 			colours[1] = 16;
 			colours[0] = 5;
 		}
+	}
+
+	public void pack(PacketBuf block) {
+		boolean prefixTitle = false;
+		boolean suffixTitle = false;
+		int flags = 0;
+		if (!male) {
+			flags |= 0x1;//Female
+		}
+		if (prefixTitle) {
+			flags |= 0x40;//Title prefix
+		}
+		if (suffixTitle) {
+			flags |= 0x80;//Title suffix
+		}
+		PacketBuf update = new PacketBuf();
+		update.put(flags);//Flags
+		if (prefixTitle) {
+			update.putJagString("");//Title prefix
+		}
+		if (suffixTitle) {
+			update.putJagString("");//Title suffix
+		}
+		update.put(0);//Is hidden
+		//TODO: Fill in some missing data related to something...		
+		for (int slot = 0; slot < 4; slot++) {
+			update.put((byte) 0);//TODO: Update this
+		}
+		update.putShort(256 + looks[2]);
+		update.putShort(256 + looks[3]);
+		update.putShort(256 + looks[5]);
+		update.putShort(256 + looks[0]);
+		update.putShort(256 + looks[4]);
+		update.putShort(256 + looks[6]);
+		update.putShort(256 + looks[1]);
+		for (int c : colours) {
+			update.put((byte) c);
+		}
+		update.putShort(0x328);
+		update.putShort(0x337);
+		update.putShort(0x333);
+		update.putShort(0x334);
+		update.putShort(0x335);
+		update.putShort(0x336);
+		update.putShort(0x338);
+
+		update.putString("Player name");//Display name		
+		update.put(4);//Combat/total level
+		update.put(0);//Combat level offset
+		update.put(-1);//Unknown (related to the above somehow)
+		
+		update.put(0);//Has NPC Transform
+		block.put(update.getLength());
+		block.putBytesA(update.toPacket(), 0, update.getLength());
 	}
 
 	/**
@@ -101,7 +157,7 @@ public class Appearance {
 	 * @return the gender
 	 */
 	public int getGender() {
-		return gender;
+		return male ? 0 : 1;
 	}
 
 	/**
@@ -122,6 +178,6 @@ public class Appearance {
 	 * @param gender the gender to set
 	 */
 	public void setGender(int gender) {
-		this.gender = gender;
+		this.male = (gender == 0);
 	}
 }

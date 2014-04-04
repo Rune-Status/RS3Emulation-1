@@ -1,170 +1,120 @@
 package net.ieldor.modules.scripts;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import groovy.util.GroovyScriptEngine;
+import groovy.util.ResourceException;
+import groovy.util.ScriptException;
 
-import javax.script.ScriptException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Map;
-import java.util.Set;
 
-/**
- * Created by Hadyn Richard
- */
-public final class ScriptManager {
+import net.ieldor.Constants;
+import net.ieldor.Main;
 
-    /**
-     * The logger for this class.
-     */
-    private static final Logger logger = LoggerFactory.getLogger(ScriptManager.class);
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-    /**
-     * The JSON factory to create new JSON parsers with.
-     */
-    private final JsonFactory factory = new JsonFactory();
+public class ScriptManager {
+	
+	public static final String DATA_DIR = "./data/";
+	
+	public static final String SCRIPT_DIR = "./data/scripts/";
 
-    /**
-     * The ruby script environment for the plugin loader.
-     */
-    private RubyScriptEnvironment scriptEnvironment = new RubyScriptEnvironment();
+	public static final String BIN_DIR = "./bin/";
 
-    /**
-     * The map that contains all the parsed plugin data.
-     */
-    private final Map<String, ScriptData> parsedPluginData = new HashMap<>();
+	private static GroovyScriptEngine engine;
 
-    /**
-     * The set of plugins that have had their scripts loaded.
-     */
-    private Set<String> loadedPlugins = new HashSet<>();
+	private static final Map<String, Class<?>> scripts = new HashMap<>();
 
-    /**
-     * Constructs a new {@link PluginLoader};
-     */
-    public ScriptManager() {}
+	public void initiate() {
+		Main.getLogger().info("Loading Groovy Sripting System.");
+		try {
+			engine = new GroovyScriptEngine(new String[] { SCRIPT_DIR });
 
-    /**
-     * Sets the context for the script environment.
-     * @param context The context for the environment.
-     */
-    public void setContext(ScriptContext context) {
-        scriptEnvironment.setContext(context);
-    }
+			ImportCustomizer imports = new ImportCustomizer();
+			imports.addImport("Main", "net.vpk.Main");
+			imports.addImport("Constants", "net.vpk.Constants");
+			File importsFile = new File(DATA_DIR + "imports.txt");
+			/*if (Constants.DEVELOPER_MODE) {
+				BufferedWriter writer = new BufferedWriter(new FileWriter(importsFile));
+				generateImports(new File(BIN_DIR + "alterrs/game/"), imports, writer);
+				generateImports(new File(BIN_DIR + "alterrs/rs751/"), imports, writer);
+				writer.close();
+			} else {*/
+				loadImports(importsFile, imports);
+			//}
 
-    /**
-     * Loads all the plugins from the specified directory.
-     */
-    public void load(String dir) throws IOException, ScriptException {
-        load(new File(dir));
-    }
+			engine.getConfig().addCompilationCustomizers(imports);
+		} catch (IOException e) {
+			Main.getLogger().error("Failed to initialize script engine!", e);
+		}
+	}
 
-    /**
-     * Loads all the plugins from the specified file directory.
-     */
-    public void load(File dir) throws IOException, ScriptException {
-        scriptEnvironment.eval(new Script(new File(dir, "bootstrap.rb")));
-        for(File file : dir.listFiles()) {
-            
-            /* Skip over non-directory files */
-            if(!file.isDirectory()) {
-                continue;
-            }
+	private static void generateImports(File dir, ImportCustomizer imports, BufferedWriter writer) throws IOException {
+		for (File file : dir.listFiles()) {
+			if (file.isDirectory()) {
+				generateImports(file, imports, writer);
+				continue;
+			}
 
-            File dataFile = new File(file, "plugin.json");
+			if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
+				String alias = file.getName().replace(".class", "");
+				String name = file.getPath().replace(File.separatorChar, '/').replace(BIN_DIR, "").replace(".class", "").replace('/', '.');
+				imports.addImports(alias, name);
 
-            /* Check to see if the json data file exists */
-            if(!dataFile.exists()) {
-                logger.warn("missing plugin.json file from '" + file.getName() + "' plugin");
-                return;
-            }
+				writer.write(name);
+				writer.newLine();
+			}
+		}
+	}
 
-            JsonParser parser = factory.createJsonParser(dataFile);
+	private static void loadImports(File file, ImportCustomizer imports) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String name;
+		while ((name = reader.readLine()) != null) {
+			imports.addImport(name.substring(name.lastIndexOf('.') + 1, name.length()), name);
+		}
+		reader.close();
+	}
 
-            /* Check to see if the JSON structure start is correct */
-            if(parser.nextToken() != JsonToken.START_OBJECT) {
-                throw new IOException();
-            }
+	@SuppressWarnings("unchecked")
+	public static <S> Class<S> loadScript(String scriptName) {
+		Class<S> clazz = (Class<S>) scripts.get(scriptName);
+		if (clazz == null) {
+			try {
+				clazz = engine.loadScriptByName(scriptName.replace('.', '/') + ".groovy");
+			} catch (ResourceException | ScriptException e) {
+				Main.getLogger().warn("Failed to load script : " + scriptName, e);
+				return null;
+			}
+			scripts.put(scriptName, clazz);
+		}
+		return clazz;
+	}
 
-            /* Load the plugin data from the JSON file */
-            ScriptData pluginData = new ScriptData();
-            while(parser.nextToken() != JsonToken.END_OBJECT) {
-                String currentName = parser.getCurrentName();
-                switch(currentName.toLowerCase()) {
-                    case "scripts":
-                        /* Check to see if the next token is valid */
-                        if(parser.nextToken() != JsonToken.START_ARRAY) {
-                            throw new IOException();
-                        }
-                        
-                        while(parser.nextToken() != JsonToken.END_ARRAY) {
-                            pluginData.addScript(parser.getText());
-                        }
-                        break;
+	public static <S> S initScript(String scriptName, Object... args) {
+		try {
+			Class<S> clazz = loadScript(scriptName);
 
-                    case "dependencies":
-                        /* Check to see if the next token is valid */
-                        if(parser.nextToken() != JsonToken.START_ARRAY) {
-                            throw new IOException();
-                        }
+			Class<?> types[] = new Class[args.length];
+			for (int i = 0; i < args.length; i++) {
+				types[i] = args[i].getClass();
+			}
 
-                        while(parser.nextToken() != JsonToken.END_ARRAY) {
-                            pluginData.addDependency(parser.getText());
-                        }
-                        break;
-                }
-            }
-            parsedPluginData.put(file.getName(), pluginData);
-        }
+			return clazz.getConstructor(types).newInstance(args);
+		} catch (IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException e) {
+			Main.getLogger().warn("Failed to init script : " + scriptName, e);
+			return null;
+		}
+	}
 
-        /* Load each of the plugins from its data */
-        for(Entry<String, ScriptData> entry : parsedPluginData.entrySet()) {
-
-            /* Check if the plugin has already been loaded */
-            if(loadedPlugins.contains(entry.getKey())) {
-                continue;
-            }
-
-            loadPlugin(dir, entry.getKey(), entry.getValue());
-        }
-
-        logger.info("PluginLoader loaded " + loadedPlugins.size() + " plugins...");
-    }
-
-    /**
-     * Loads a plugin from the specified root directory, name, and plugin data.
-     */
-    private void loadPlugin(File dir, String name, ScriptData data) throws IOException, ScriptException {
-        /* Check if the plugin has already been loaded */
-        if(loadedPlugins.contains(name)) {
-            return;
-        }
-
-        /* Load all of the dependencies first */
-        for(String pluginName : data.getDependencies()) {
-
-            /* Check if the dependency is valid */
-            if(!parsedPluginData.containsKey(pluginName)) {
-                continue;
-            }
-
-            loadPlugin(dir, pluginName, parsedPluginData.get(pluginName));
-        }
-        
-        File scriptDir = new File(dir, name);
-
-        /* Evaluate each of the scripts */
-        for(String scriptName : data.getScripts()) {
-            scriptEnvironment.eval(new Script(new File(scriptDir, scriptName)));
-        }
-
-        /* Note that the plugin has been loaded */
-        loadedPlugins.add(name);
-    }
+	public static void clearCache() {
+		engine.getGroovyClassLoader().clearCache();
+		scripts.clear();
+	}
 }

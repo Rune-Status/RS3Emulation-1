@@ -23,8 +23,10 @@ import java.util.logging.Logger;
 
 import net.ieldor.Constants;
 import net.ieldor.Main;
+import net.ieldor.game.World;
 import net.ieldor.game.model.Entity;
 import net.ieldor.game.model.Position;
+import net.ieldor.game.model.update.PlayerUpdate;
 import net.ieldor.game.social.FriendManager;
 import net.ieldor.modules.login.NameManager;
 import net.ieldor.modules.login.NameManager.DisplayName;
@@ -69,12 +71,14 @@ public class Player extends Entity {
 	 */
 	private Appearance appearance = new Appearance();
 	
+	private PlayerUpdate playerUpdater;
+	
 	/**
 	 * The social (friends/ignores) manager for the player
 	 */
 	private FriendManager friendManager = new FriendManager(this, Main.getloginServer().nameManager);
 	
-	private WorldData currentWorld = null;
+	private World currentWorld = null;
 	
 	/**
 	 * Constructs a new {@code Player} instance.
@@ -87,6 +91,7 @@ public class Player extends Entity {
 		this.channel = channel;
 		this.username = username;
 		this.password = password;
+		this.playerUpdater = new PlayerUpdate(this);
 	}
 	
 	public void initDisplayName () {
@@ -104,9 +109,10 @@ public class Player extends Entity {
 		channel.pipeline().addFirst(new PacketBufEncoder());
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
-		currentWorld = WorldList.LOBBY;
+		currentWorld = World.getLobby();
+		currentWorld.register(this);//Places the player into the lobby
 		
-		Logger.getAnonymousLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
+		//Main.getLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
 		sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
 		getActionSender().sendWindowPane(906, 0);//Sends the lobby pane
 		friendManager.init();
@@ -121,7 +127,10 @@ public class Player extends Entity {
 		}
 	}
 	
-	public void disconnect () {
+	/**
+	 * Runs the logout tasks for the player
+	 */
+	public void logout () {
 		currentWorld = null;
 		friendManager.disconnect();
 	}
@@ -135,9 +144,11 @@ public class Player extends Entity {
 		channel.pipeline().addFirst(new PacketBufEncoder());
 		GameSession gameSession = new GameSession(channelHandlerContext, this);
 		channelHandlerContext.channel().attr(ServerChannelAdapterHandler.attributeMap).set(gameSession);
-			
+		currentWorld = World.getDefaultWorld();
+		currentWorld.register(this);//Places the player into the world
+		
 		if(returnCode == 2) { 
-			Logger.getAnonymousLogger().info("Successfully registered player into world [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
+			//Main.getLogger().info("Successfully registered player into world [username=" + username + " index=" + getIndex() + " online=" + currentWorld.getPlayers().size() + "]");
 			actionSender.sendLogin();
 		}		
 	}
@@ -191,6 +202,10 @@ public class Player extends Entity {
 		return password;
 	}
 	
+	public boolean hasDifferentDisplayName() {
+		return (displayName != username);
+	}
+	
 	/**
 	 * Gets the action sender instance.
 	 * @return The action sender.
@@ -215,7 +230,16 @@ public class Player extends Entity {
 		return appearance;
 	}
 	
-	public WorldData getWorldInfo () {
+	public PlayerUpdate getPlayerUpdater () {
+		return playerUpdater;
+	}
+	
+	public World getWorld () {
 		return currentWorld;
+	}
+	
+	@Override
+	public String toString() {
+		return "Player [username=" + username + ", index=" + getIndex() + ", rights=" + 0 + "]";//TODO: Add rights
 	}
 }

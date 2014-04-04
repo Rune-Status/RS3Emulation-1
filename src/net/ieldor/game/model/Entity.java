@@ -24,6 +24,7 @@ import java.util.Comparator;
 import net.ieldor.game.model.masks.UpdateMask;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.model.region.Region;
+import net.ieldor.game.model.update.UpdateFlags;
 
 /**
  * Represents either an Mob (eg: Skeleton, Spider, Dwarf) or a Player
@@ -53,6 +54,10 @@ public class Entity {
 	 * The directions of walking and running.
 	 */
 	private Direction walkDir, runDir;
+	
+	private UpdateFlags updateFlags;
+	
+	private boolean teleported;
 	
 	/**
 	 * The queue of update masks.
@@ -96,6 +101,7 @@ public class Entity {
 	 */
 	public Entity(Position position) {
 		this.position = position;
+		updateFlags = new UpdateFlags();
 	}
 	
 	/**
@@ -104,6 +110,10 @@ public class Entity {
 	 */
 	public Direction getWalkDir() {
 		return walkDir;
+	}
+	
+	public UpdateFlags getUpdateFlags() {
+		return updateFlags;
 	}
 
 	/**
@@ -152,6 +162,14 @@ public class Entity {
 				return;
 		
 		updateMasks.add(mask);
+	}
+
+	public boolean isTeleported() {
+		return teleported;
+	}
+
+	public void setTeleported(boolean teleported) {
+		this.teleported = teleported;
 	}
 	
 	/**

@@ -56,6 +56,9 @@ public class MiscPacketDecoder {
 		case PacketCodec.REMOVE_IGNORE_PACKET:
 			player.getFriendManager().removeIgnore(packet.getString());
 			break;
+		case PacketCodec.SCREEN_PACKET:
+			//TODO: Handle this packet
+			break;
 		default:
 			System.out.println("Unhandled packet: opcode="+packet.getOpcode()+", length="+packet.getLength());
 			break;

@@ -70,7 +70,7 @@ public class FriendManager {
 	
 	public void init () {
 		onlinePlayers.put(NameManager.simplifyName(player.getUsername()), this);
-		currentWorld = player.getWorldInfo();
+		currentWorld = player.getWorld().getData();
 		for (Friend f : friends.values()) {
 			DisplayName nameData = nameManager.getDisplayNamesFromUsername(f.username);
 			if (nameData == null) {

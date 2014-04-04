@@ -129,6 +129,19 @@ public final class Position {
 	 */
 	public int getLocalY(Position base) {
 		return y - 8 * (base.getRegionY() - 6);
+	}	
+
+
+	public int regionHash() {
+		return getRegionY() + (getRegionX() << 8) + (height << 16);
+	}
+
+	public int getXInRegion() {
+		return x & 0x3F;
+	}
+
+	public int getYInRegion() {
+		return y & 0x3F;
 	}
 
 	@Override
@@ -167,6 +180,9 @@ public final class Position {
 	 * @return {@code true} if so, {@code false} if not.
 	 */
 	public boolean isWithinDistance(Position other, int distance) {
+		if (other.getHeight() != this.height) {
+			return false;
+		}
 		int deltaX = Math.abs(x - other.x);
 		int deltaY = Math.abs(y - other.y);
 		return deltaX <= distance && deltaY <= distance;

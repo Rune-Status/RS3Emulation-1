@@ -21,7 +21,7 @@ import net.ieldor.network.packet.handlers.WorldListHandler;
 public final class PacketCodec {
 	
 	//TODO Update packet opcodes to 795
-	public final static int SCREEN_PACKET = -1;
+	public final static int SCREEN_PACKET = 25;//795
 	public final static int PING_PACKET = 0;//795
 	public final static int WORLD_LIST_UPDATE = 100;//795
 	

@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import io.netty.channel.ChannelHandlerContext;
 import net.ieldor.GameEngine;
 import net.ieldor.Main;
+import net.ieldor.game.World;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.io.Packet;
 import net.ieldor.io.PacketReader;
@@ -60,16 +61,19 @@ public class GameSession extends Session {
 	 */
 	@Override
 	public void disconnected() {
-		player.disconnect();
+		Main.getLogger().info("Unregistering player at index: "+player.getIndex());
+		player.getWorld().unregister(player);
+		
+		player.logout();
 		try {
 			BinaryPlayerManager.savePlayer(player);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		synchronized(Main.getPlayers()) {
+		/*synchronized(Main.getPlayers()) {
 			Main.getPlayers().remove(player);
-		}
-		Logger.getAnonymousLogger().info("Successfully unregistered player from world [username=" + player.getUsername() + " online=" + Main.getPlayers().size() + "]");		
+		}*/
+		//Main.getLogger().info("Successfully unregistered player from world [username=" + player.getUsername() + " online=" + player.getWorld().getPlayers().size() + "]");		
 	}
 
 	/* (non-Javadoc)

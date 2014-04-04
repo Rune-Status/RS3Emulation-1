@@ -54,6 +54,11 @@ public final class Constants {
 	public static final int ServerSubRevision = 1;
 	
 	/**
+	 * Possible map sizes
+	 */
+	public static final int[] MAP_SIZES = { 104, 120, 136, 168, 72 };
+	
+	/**
 	 * The server token.
 	 */
 	public static final String SERVER_TOKEN = "0BlrYT6t63jxgB3JVUyThJPPCLV/VuhP";
