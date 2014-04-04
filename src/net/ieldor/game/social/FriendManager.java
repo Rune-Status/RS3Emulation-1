@@ -69,6 +69,8 @@ public class FriendManager {
 	}
 	
 	public void init () {
+		player.getActionSender().sendOnlineStatus(onlineStatus);
+		player.getActionSender().sendUnlockFriendsList();
 		onlinePlayers.put(NameManager.simplifyName(player.getUsername()), this);
 		currentWorld = player.getWorld().getData();
 		for (Friend f : friends.values()) {
@@ -88,7 +90,6 @@ public class FriendManager {
 				i.setDisplayNames(nameData.getDisplayName(), nameData.getPrevName());
 			}
 		}
-		player.getActionSender().sendOnlineStatus(onlineStatus);
 		player.getActionSender().sendFriends(friends.values());
 		player.getActionSender().sendIgnores(ignores.values());
 		sendStatusUpdate(this, false);

@@ -1,5 +1,4 @@
 /bin
-/data/cache
-/data/savedGames
-/data/displayNames.bin
+/data
+!/data/landscapeKeys.bin
 /lib

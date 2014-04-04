@@ -18,13 +18,13 @@ package net.ieldor.network.packet.handlers;
 
 import java.util.Map.Entry;
 
+import net.ieldor.config.OutgoingOpcode;
 import net.ieldor.game.model.player.Player;
-import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
+import net.ieldor.io.PacketBuf;
 import net.ieldor.modules.worldlist.ServerLocation;
 import net.ieldor.modules.worldlist.WorldData;
 import net.ieldor.modules.worldlist.WorldList;
-import net.ieldor.network.ActionSender;
 import net.ieldor.network.packet.PacketHandler;
 import net.ieldor.network.packet.context.WorldListContext;
 
@@ -45,7 +45,7 @@ public class WorldListHandler implements PacketHandler<WorldListContext> {
 		 * Credits for lobby handling: http://www.rune-server.org/runescape-development/rs-503-client-server/snippets/466556-718-complete-lobby.html
 		 */
 		boolean full = (context.getListHash() == 0);
-		PacketBuf buf = new PacketBuf(ActionSender.WORLD_LIST_PACKET, PacketType.SHORT);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.WORLD_LIST_PACKET, PacketType.SHORT);
 		buf.put(1);//Must equal 1
 		buf.put(2);//Must equal 2
 		buf.put(full ? 1 : 0);

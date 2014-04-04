@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import net.ieldor.Constants;
 import net.ieldor.Main;
+import net.ieldor.config.ClientVarps;
 import net.ieldor.game.World;
 import net.ieldor.game.model.Entity;
 import net.ieldor.game.model.Position;
@@ -113,9 +114,9 @@ public class Player extends Entity {
 		currentWorld.register(this);//Places the player into the lobby
 		
 		//Main.getLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
-		sendLobbyConfigs(Constants.LOBBY_CONFIGS_802);
+		sendLobbyConfigs(ClientVarps.getLobbyVarps());
 		getActionSender().sendWindowPane(906, 0);//Sends the lobby pane
-		//friendManager.init();
+		friendManager.init();
 	}
 	
 	public void sendLobbyConfigs (int[] configs) {

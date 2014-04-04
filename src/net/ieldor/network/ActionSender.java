@@ -17,11 +17,12 @@
 package net.ieldor.network;
 
 import java.util.Collection;
-import java.util.List;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import net.ieldor.Constants;
+import net.ieldor.config.ClientVarps;
+import net.ieldor.config.OutgoingOpcode;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.model.skill.Skill;
 import net.ieldor.game.social.Friend;
@@ -31,7 +32,6 @@ import net.ieldor.io.Packet;
 import net.ieldor.io.PacketBuf;
 import net.ieldor.io.Packet.PacketType;
 import net.ieldor.modules.worldlist.WorldData;
-import net.ieldor.utility.BinaryLandscapeHandler;
 
 /**
  * A class used to store the packets (actions) that an {@link Entity} can
@@ -43,7 +43,7 @@ import net.ieldor.utility.BinaryLandscapeHandler;
 public class ActionSender {
 	
 	//TODO: Update packet opcodes to the required revision. If the revision in the comments is not correct (or missing), the packet needs updating
-	private static final int KEEP_ALIVE_PACKET = 50;//802
+	/*private static final int KEEP_ALIVE_PACKET = 50;//802
 	private static final int DYNAMIC_VARP_PACKET = 98;//802
 	private static final int FIXED_VARP_PACKET = 136;//802
 	
@@ -67,7 +67,7 @@ public class ActionSender {
 	
 	public static final int WORLD_LIST_PACKET = 156;//802
 	private static final int MESSAGE_PACKET = 17;//795
-	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;
+	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;*/
 	
 
 	/**
@@ -103,7 +103,7 @@ public class ActionSender {
 	 * Sends a ping (keep-alive) packet back to the client. Used to ensure the connection is not dropped
 	 */
 	public void sendPing () {
-		PacketBuf buf = new PacketBuf(KEEP_ALIVE_PACKET);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.KEEP_ALIVE_PACKET);
 		player.getChannel().write(buf.toPacket());
 	}
 	
@@ -116,13 +116,13 @@ public class ActionSender {
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		int[] xteas = new int[4];
 		
-		PacketBuf buf = new PacketBuf(WINDOW_PANE_PACKET);
-		buf.putInt1(xteas[3]);
-		buf.putInt(xteas[2]);
-		buf.putShort(id);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.WINDOW_PANE_PACKET);
+		buf.putByteC(type);
+		buf.putLEInt(xteas[0]);
+		buf.putLEShortA(id);
+		buf.putInt2(xteas[2]);
+		buf.putInt2(xteas[3]);
 		buf.putLEInt(xteas[1]);
-		buf.putInt(xteas[0]);
-		buf.putByteS(type);
 		sendPacket(buf.toPacket());
 	}
 	
@@ -137,16 +137,33 @@ public class ActionSender {
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		int[] xteas = new int[4];
 		
-		PacketBuf buf = new PacketBuf(INTERFACE_PACKET);
-		buf.putInt(xteas[3]);
-		buf.putInt1(xteas[2]);
-		buf.putLEShort(interfaceID);//Interface ID
-		buf.putLEInt(xteas[0]);
-		buf.putInt2(xteas[1]);
-		buf.putByteC(clipped ? 1 : 0);//Clipped
-		buf.putInt1(windowID << 16 | windowComponent);//Parent hash
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.INTERFACE_PACKET);
+		buf.putLEShortA(interfaceID);//Interface ID
+		buf.putLEInt(xteas[1]);
+		buf.putByteA(clipped ? 1 : 0);//Clipped
+		buf.putInt2(xteas[3]);
+		buf.putInt1(xteas[0]);
+		buf.putInt(xteas[2]);
+		buf.putInt(windowID << 16 | windowComponent);//Parent hash
 		
 		sendPacket(buf.toPacket());
+	}
+	
+	/**
+	 * Sends a player option.
+	 * @param option	The option string
+	 * @param slot		The option slot ID
+	 * @param top		Whether the option should be at the top
+	 * @param cursor	The cursor sprite ID to use
+	 */
+	public void sendPlayerOption(String option, int slot, boolean top, int cursor) {
+		//NOTE: The order and encoding methods of this packet vary between client revisions
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.PLAYER_OPTION_PACKET, PacketType.BYTE);
+		buf.putByteC(top ? 1 : 0);//isOnTop
+		buf.putString(option);
+		buf.putByteA(slot);
+		buf.putLEShortA(cursor);//Cursor
+		player.getChannel().write(buf.toPacket());
 	}
 
 	/**
@@ -154,11 +171,11 @@ public class ActionSender {
 	 * @param id	 The id (key) of the client varp
 	 * @param value The value of the client varp
 	 */
-	public void sendFixedVarp(int id, int value) {
+	public void sendSmallVarp(int id, int value) {
 		//NOTE: The order and encoding methods of this packet vary between client revisions
-		PacketBuf buf = new PacketBuf(FIXED_VARP_PACKET);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.SMALL_VARP_PACKET);
+		buf.putShortA(id);
 		buf.putByteA(value);
-		buf.putLEShort(id);
 		sendPacket(buf.toPacket());
 	}
 
@@ -167,11 +184,11 @@ public class ActionSender {
 	 * @param id	 The id (key) of the client varp
 	 * @param value The value of the client varp
 	 */
-	public void sendDynamicVarp(int id, int value) {
+	public void sendLargeVarp(int id, int value) {
 		//NOTE: The order and encoding methods of this packet vary between client revisions
-		PacketBuf buf = new PacketBuf(DYNAMIC_VARP_PACKET);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.LARGE_VARP_PACKET);
 		buf.putLEShortA(id);
-		buf.putInt1(value);
+		buf.putInt(value);
 		sendPacket(buf.toPacket());
 	}
 
@@ -182,9 +199,9 @@ public class ActionSender {
 	 */
 	public void sendVarp(int id, int value) {
 		if (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE) {
-			sendDynamicVarp(id, value);
+			sendLargeVarp(id, value);
 		} else {
-			sendFixedVarp(id, value);
+			sendSmallVarp(id, value);
 		}
 	}
 	
@@ -193,7 +210,7 @@ public class ActionSender {
 	 * @param status The player's online status
 	 */
 	public void sendOnlineStatus(OnlineStatus status) {
-		PacketBuf buf = new PacketBuf(ONLINE_STATUS_PACKET);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.ONLINE_STATUS_PACKET);
 		buf.put(status.getCode());
 		sendPacket(buf.toPacket());
 	}
@@ -203,7 +220,7 @@ public class ActionSender {
 	 * Changes friends list message from "Loading Friends List." to "Connecting to Friend Server."
 	 */
 	public void sendUnlockFriendsList () {
-		PacketBuf buf = new PacketBuf(UNLOCK_FRIENDS_LIST);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.UNLOCK_FRIENDS_LIST);
 		sendPacket(buf.toPacket());
 	}
 	
@@ -212,7 +229,7 @@ public class ActionSender {
 	 * @param friends A list containing all the friends on the player's friends list
 	 */
 	public void sendFriends (Collection<Friend> friends) {
-		PacketBuf buf = new PacketBuf(FRIENDS_PACKET, PacketType.SHORT);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.FRIENDS_PACKET, PacketType.SHORT);
 		for (Friend f : friends) {
 			packFriend(f, false, buf);
 		}
@@ -225,7 +242,7 @@ public class ActionSender {
 	 * @param isNameChange	Whether or not this is a notification of a friend changing their name.
 	 */
 	public void sendFriend (Friend friend, boolean isNameChange) {
-		PacketBuf buf = new PacketBuf(FRIENDS_PACKET, PacketType.SHORT);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.FRIENDS_PACKET, PacketType.SHORT);
 		packFriend(friend, isNameChange, buf);
 		sendPacket(buf.toPacket());
 	}	
@@ -266,7 +283,7 @@ public class ActionSender {
 	 * @param ignores A list containing all the ignores on the player's ignore list
 	 */
 	public void sendIgnores(Collection<Ignore> ignores) {
-		PacketBuf buf = new PacketBuf(IGNORES_PACKET, PacketType.SHORT);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.IGNORES_PACKET, PacketType.SHORT);
 		for (Ignore i : ignores) {
 			packIgnore(i, false, buf);
 		}
@@ -279,7 +296,7 @@ public class ActionSender {
 	 * @param isNameChange Whether this notification represents a name change
 	 */
 	public void sendIgnore(Ignore ignore, boolean isNameChange) {
-		PacketBuf buf = new PacketBuf(IGNORES_PACKET, PacketType.SHORT);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.IGNORES_PACKET, PacketType.SHORT);
 		packIgnore(ignore, isNameChange, buf);
 		sendPacket(buf.toPacket());		
 	}
@@ -307,7 +324,7 @@ public class ActionSender {
 	}
 	
 	public void sendMessage(String message, MessageOpcode opcode, Player sender) {
-		PacketBuf buf = new PacketBuf(MESSAGE_PACKET, PacketType.BYTE);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.MESSAGE_PACKET, PacketType.BYTE);
 		buf.putSmart(opcode.getOpcode());
 		buf.putInt(0);//Purpose unknown
 		int mask = 0;
@@ -333,11 +350,11 @@ public class ActionSender {
 	 */
 	public void sendLogin() {
 		sendMapRegion(true);
-		player.sendLobbyConfigs(Constants.LOBBY_CONFIGS_802);
+		player.sendLobbyConfigs(ClientVarps.getLobbyVarps());
 		sendWindowPane(1477, 0);
 		sendGameScreen();
 		sendDefaultPlayersOptions();
-		sendRunEnergy();
+		//sendRunEnergy();
 		sendGameMessage("Welcome to Ieldor.", false);
 		//sendMessage("Ieldor is currently in the BETA stage.");
 		player.getFriendManager().init();
@@ -429,7 +446,7 @@ public class ActionSender {
 	 */
 	public void sendMapRegion(boolean isLogin) {
 		player.setLastPosition(player.getPosition());
-		PacketBuf buf = new PacketBuf(STATIC_MAP_REGION_PACKET, PacketType.SHORT);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.STATIC_MAP_REGION_PACKET, PacketType.SHORT);
 		boolean forceSend = true;
 		if((((player.getPosition().getRegionX() / 8) == 48) || ((player.getPosition().getRegionX() / 8) == 49)) && ((player.getPosition().getRegionY() / 8) == 48)) {
 			forceSend = false;
@@ -440,12 +457,12 @@ public class ActionSender {
 		if (isLogin) {
 			player.getPlayerUpdater().init(buf);
 		}
-		buf.putByteC(0);//mapSize
-		buf.putByteC(isLogin ? 1 : 0);//forceRefresh
-		buf.putLEShort(player.getPosition().getRegionY());
-		buf.putShort(player.getPosition().getRegionX());
-		System.out.println("mapSize=0, posX="+player.getPosition().getRegionX()+", posY="+player.getPosition().getRegionY());
+		buf.putByteS(0);//mapSize
 		buf.put(Constants.MAP_SIZES[0]);//regionCount (number of Xteas)
+		buf.putShort(player.getPosition().getRegionY());
+		buf.putLEShortA(player.getPosition().getRegionX());
+		buf.putByteC((isLogin || forceSend) ? 1 : 0);//forceRefresh
+		System.out.println("mapSize=0, posX="+player.getPosition().getRegionX()+", posY="+player.getPosition().getRegionY());
 		/*buf.putShortA(player.getPosition().getLocalX());
 		for(int xCalc = (player.getPosition().getRegionX() - 6) / 8; xCalc <= ((player.getPosition().getRegionX() + 6) / 8); xCalc++) {
 			for(int yCalc = (player.getPosition().getRegionY() - 6) / 8; yCalc <= ((player.getPosition().getRegionY() + 6) / 8); yCalc++) {
@@ -536,7 +553,7 @@ public class ActionSender {
 	 */
 	public void sendSkillLevel(int skillID) {
 		Skill skill = player.getSkills().getSkill(skillID);
-		PacketBuf buf = new PacketBuf(SKILL_DATA_PACKET);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.SKILL_DATA_PACKET);
 		buf.putByteC((byte) skillID);
 		buf.putInt2((int) skill.getExperience());
 		buf.putByteS(skill.getCurrentLevel());
@@ -547,7 +564,7 @@ public class ActionSender {
 	 * Sends the run energy.
 	 */
 	public void sendRunEnergy() {
-		PacketBuf buf = new PacketBuf(RUN_ENERGY_PACKET);
+		PacketBuf buf = new PacketBuf(OutgoingOpcode.RUN_ENERGY_PACKET);
 		buf.put(player.getRunEnergy());
 		player.getChannel().write(buf.toPacket());
 	}
@@ -560,22 +577,6 @@ public class ActionSender {
 	 */
 	public void sendPlayerOption (String option, int slot, boolean top) {
 		sendPlayerOption(option, slot, top, -1);
-	}
-	
-	/**
-	 * Sends a player option.
-	 * @param option	The option string
-	 * @param slot		The option slot ID
-	 * @param top		Whether the option should be at the top
-	 * @param cursor	The cursor sprite ID to use
-	 */
-	public void sendPlayerOption(String option, int slot, boolean top, int cursor) {
-		PacketBuf buf = new PacketBuf(PLAYER_OPTION_PACKET, PacketType.BYTE);
-		buf.putString(option);
-		buf.put(top ? 1 : 0);//isOnTop
-		buf.putByteC(slot);
-		buf.putLEShort(cursor);//Cursor
-		player.getChannel().write(buf.toPacket());
 	}
 	
 	/**

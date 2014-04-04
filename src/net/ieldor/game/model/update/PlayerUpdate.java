@@ -17,8 +17,8 @@
 package net.ieldor.game.model.update;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
+import net.ieldor.config.OutgoingOpcode;
 import net.ieldor.game.World;
 import net.ieldor.game.model.Direction;
 import net.ieldor.game.model.Entity;
@@ -27,7 +27,6 @@ import net.ieldor.game.model.player.Player;
 import net.ieldor.game.model.update.UpdateFlags.Flags;
 import net.ieldor.io.Packet;
 import net.ieldor.io.PacketBuf;
-import net.ieldor.network.ActionSender;
 
 /**
 *
@@ -72,7 +71,7 @@ public class PlayerUpdate {
 			player.getActionSender().sendMapRegion(false);
 		}
 		
-		PacketBuf buffer = new PacketBuf(ActionSender.PLAYER_UPDATE_PACKET, Packet.PacketType.SHORT);
+		PacketBuf buffer = new PacketBuf(OutgoingOpcode.PLAYER_UPDATE_PACKET, Packet.PacketType.SHORT);
 		PacketBuf block = new PacketBuf();
 		
 		packLocalPlayers(buffer, block, true);

@@ -1,5 +1,6 @@
 package net.ieldor.network.packet;
 
+import net.ieldor.config.IncommingOpcode;
 import net.ieldor.network.packet.decoder.ActionButtonDecoder;
 import net.ieldor.network.packet.decoder.ChatDecoder;
 import net.ieldor.network.packet.decoder.CommandDecoder;
@@ -21,7 +22,7 @@ import net.ieldor.network.packet.handlers.WorldListHandler;
 public final class PacketCodec {
 	
 	//TODO Update packet opcodes to 795
-	public final static int SCREEN_PACKET = 25;//795
+	/*public final static int SCREEN_PACKET = 25;//795
 	public final static int PING_PACKET = 24;//802
 	public final static int WORLD_LIST_UPDATE = -1;//111;//802
 	
@@ -41,7 +42,7 @@ public final class PacketCodec {
 	public final static int ADD_FRIEND_PACKET = 64;//795
 	public final static int REMOVE_FRIEND_PACKET = 112;//795
 	public final static int ADD_IGNORE_PACKET = 11;//795
-	public final static int REMOVE_IGNORE_PACKET = 80;//795
+	public final static int REMOVE_IGNORE_PACKET = 80;//795*/
 
 	/**
 	 * The maximum packets.
@@ -63,7 +64,7 @@ public final class PacketCodec {
 			//register(new int[] { 237 }, new ChatDecoder(), new ChatHandler());
 			//register(new int[] { 55 }, new EquipItemDecoder(), new EquipItemHandler());
 			//register(new int[] { 81 }, new UnequipItemDecoder(), new UnequipItemHandler());
-			register(new int[] { WORLD_LIST_UPDATE }, new WorldListDecoder(), new WorldListHandler());
+			register(new int[] { IncommingOpcode.WORLD_LIST_UPDATE }, new WorldListDecoder(), new WorldListHandler());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

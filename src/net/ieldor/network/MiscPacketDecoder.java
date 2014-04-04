@@ -16,6 +16,7 @@
  */
 package net.ieldor.network;
 
+import net.ieldor.config.IncommingOpcode;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.social.OnlineStatus;
 import net.ieldor.io.Packet;
@@ -32,31 +33,31 @@ public class MiscPacketDecoder {
 	
 	public static void decodeMiscPacket (PacketReader packet, Player player) {
 		switch (packet.getOpcode()) {
-		case PacketCodec.PING_PACKET:
+		case IncommingOpcode.PING_PACKET:
 			player.getActionSender().sendPing();
 			break;
-		case PacketCodec.ONLINE_STATUS_PACKET:
+		case IncommingOpcode.ONLINE_STATUS_PACKET:
 			int b1 = packet.getByte();
 			OnlineStatus status = OnlineStatus.get(packet.getByte());
 			int b3 = packet.getByte();
 			player.getFriendManager().setOnlineStatus(status);
 			break;
-		case PacketCodec.ADD_FRIEND_PACKET:
+		case IncommingOpcode.ADD_FRIEND_PACKET:
 			String name = packet.getString();
 			player.getFriendManager().addFriend(name);
 			break;
-		case PacketCodec.REMOVE_FRIEND_PACKET:
+		case IncommingOpcode.REMOVE_FRIEND_PACKET:
 			player.getFriendManager().removeFriend(packet.getString());
 			break;
-		case PacketCodec.ADD_IGNORE_PACKET:
+		case IncommingOpcode.ADD_IGNORE_PACKET:
 			String ignore = packet.getString();
 			boolean tillLogout = (packet.get() == 1);
 			player.getFriendManager().addIgnore(ignore, tillLogout);
 			break;
-		case PacketCodec.REMOVE_IGNORE_PACKET:
+		case IncommingOpcode.REMOVE_IGNORE_PACKET:
 			player.getFriendManager().removeIgnore(packet.getString());
 			break;
-		case PacketCodec.SCREEN_PACKET:
+		case IncommingOpcode.SCREEN_PACKET:
 			//TODO: Handle this packet
 			break;
 		default:

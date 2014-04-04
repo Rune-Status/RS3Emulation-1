@@ -69,7 +69,7 @@ public class ActionButtonHandler implements PacketHandler<ActionButtonContext> {
 				for (int buttonId = 125; buttonId < 149; buttonId++) {
 					if (context.getButtonId() == buttonId) {
 						player.getActionSender().sendInterface(499);
-						player.getActionSender().sendDynamicVarp(965, Constants.MENU_ID[skillIndex]);
+						player.getActionSender().sendLargeVarp(965, Constants.MENU_ID[skillIndex]);
 						this.currentSkillIndex = Constants.MENU_ID[skillIndex];
 						break;
 					}
@@ -77,7 +77,7 @@ public class ActionButtonHandler implements PacketHandler<ActionButtonContext> {
 				}
 				break;
 			case 499:
-				player.getActionSender().sendDynamicVarp(965, Constants.SUB_CONFIG[context.getButtonId() - 10] + currentSkillIndex);
+				player.getActionSender().sendLargeVarp(965, Constants.SUB_CONFIG[context.getButtonId() - 10] + currentSkillIndex);
 				break;
 		}
 	}
