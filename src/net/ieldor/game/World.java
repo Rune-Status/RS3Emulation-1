@@ -238,7 +238,7 @@ public final class World {
 	}
 	
 	public boolean isGame() {
-		return information.getNodeId() > 300;
+		return information.getNodeId() < 300;
 	}
 
 	/**

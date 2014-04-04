@@ -113,9 +113,9 @@ public class Player extends Entity {
 		currentWorld.register(this);//Places the player into the lobby
 		
 		//Main.getLogger().info("Successfully registered player into lobby [username=" + username + " index=" + getIndex() + " online=" + Main.getPlayers().size() + "]");
-		sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
+		sendLobbyConfigs(Constants.LOBBY_CONFIGS_802);
 		getActionSender().sendWindowPane(906, 0);//Sends the lobby pane
-		friendManager.init();
+		//friendManager.init();
 	}
 	
 	public void sendLobbyConfigs (int[] configs) {

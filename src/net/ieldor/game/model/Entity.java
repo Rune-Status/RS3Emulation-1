@@ -24,6 +24,7 @@ import java.util.Comparator;
 import net.ieldor.game.model.masks.UpdateMask;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.game.model.region.Region;
+import net.ieldor.game.model.skill.SkillSet;
 import net.ieldor.game.model.update.UpdateFlags;
 
 /**
@@ -69,6 +70,8 @@ public class Entity {
 			return o1.getPriority() - o2.getPriority();
 		}
 	});
+	
+	private SkillSet skills = new SkillSet();
 	
 	/**
 	 * The local players in the entities viewport.
@@ -298,5 +301,9 @@ public class Entity {
      */
     public void setRunEnergy(int runEnergy) {
         this.runEnergy = runEnergy;
+    }
+    
+    public SkillSet getSkills () {
+    	return skills;
     }
 }

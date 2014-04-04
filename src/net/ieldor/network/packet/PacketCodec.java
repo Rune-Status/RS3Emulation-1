@@ -22,8 +22,8 @@ public final class PacketCodec {
 	
 	//TODO Update packet opcodes to 795
 	public final static int SCREEN_PACKET = 25;//795
-	public final static int PING_PACKET = 0;//795
-	public final static int WORLD_LIST_UPDATE = 100;//795
+	public final static int PING_PACKET = 24;//802
+	public final static int WORLD_LIST_UPDATE = -1;//111;//802
 	
 	public final static int ACTION_BUTTON1_PACKET = -1;
 	public final static int ACTION_BUTTON2_PACKET = -1;

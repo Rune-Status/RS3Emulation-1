@@ -33,10 +33,10 @@ public class UpdateStatusEncoder extends MessageToByteEncoder<UpdateStatusMessag
 	/**
 	 * The delta for the update verification.
 	 */
-	public static final int[] UPDATE_DATA = { 2294, 69795, 41433, 35748,
-			358716, 44375, 0, 18361, 22721, 119016, 966168, 330618, 472621,
-			621699, 908236, 27551, 588732, 18398, 1244, 35523, 1973, 119,
-			1098747, 2731236, 7844, 21415 };
+	public static final int[] UPDATE_DATA = { 2303, 69795, 41433, 35866,
+		358716, 44375, 0, 18361, 24018, 124392, 976352, 336290, 478954,
+		627398, 931989, 28244, 597933, 18398, 1244, 37784, 1973, 119,
+		1096329, 2737242, 8010, 21656 };
 
 	/**
 	 * Constructs a new {@code UpdateStatusEncoder} instance.

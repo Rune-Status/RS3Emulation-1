@@ -23,6 +23,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import net.ieldor.Constants;
 import net.ieldor.game.model.player.Player;
+import net.ieldor.game.model.skill.Skill;
 import net.ieldor.game.social.Friend;
 import net.ieldor.game.social.Ignore;
 import net.ieldor.game.social.OnlineStatus;
@@ -42,14 +43,14 @@ import net.ieldor.utility.BinaryLandscapeHandler;
 public class ActionSender {
 	
 	//TODO: Update packet opcodes to the required revision. If the revision in the comments is not correct (or missing), the packet needs updating
-	private static final int KEEP_ALIVE_PACKET = 110;//795
-	private static final int DYNAMIC_VARP_PACKET = 2;//795
-	private static final int FIXED_VARP_PACKET = 156;//795
+	private static final int KEEP_ALIVE_PACKET = 50;//802
+	private static final int DYNAMIC_VARP_PACKET = 98;//802
+	private static final int FIXED_VARP_PACKET = 136;//802
 	
-	private static final int UNLOCK_FRIENDS_LIST = 154;//795
+	private static final int UNLOCK_FRIENDS_LIST = 31;//802
 	private static final int ONLINE_STATUS_PACKET = 4;//795
-	private static final int FRIENDS_PACKET = 3;//795
-	private static final int IGNORES_PACKET = 15;//795
+	private static final int FRIENDS_PACKET = 80;//802
+	private static final int IGNORES_PACKET = 99;//802
 	private static final int FRIENDS_CHANNEL_PACKET = 82;
 	private static final int CLAN_CHANNEL_PACKET = 47;//795
 	
@@ -59,11 +60,12 @@ public class ActionSender {
 	
 	private static final int PLAYER_OPTION_PACKET = 120;//795
 	private static final int RUN_ENERGY_PACKET = 13;//795
+	private static final int SKILL_DATA_PACKET = 87;//795
 	
 	private static final int INTERFACE_PACKET = 41;//795
-	private static final int WINDOW_PANE_PACKET = 71;//795
+	private static final int WINDOW_PANE_PACKET = 86;//802
 	
-	public static final int WORLD_LIST_PACKET = 117;//795
+	public static final int WORLD_LIST_PACKET = 156;//802
 	private static final int MESSAGE_PACKET = 17;//795
 	private static final int FRIENDS_CHAT_MESSAGE_PACKET = 111;
 	
@@ -115,12 +117,12 @@ public class ActionSender {
 		int[] xteas = new int[4];
 		
 		PacketBuf buf = new PacketBuf(WINDOW_PANE_PACKET);
+		buf.putInt1(xteas[3]);
+		buf.putInt(xteas[2]);
+		buf.putShort(id);
+		buf.putLEInt(xteas[1]);
 		buf.putInt(xteas[0]);
 		buf.putByteS(type);
-		buf.putLEInt(xteas[2]);
-		buf.putShortA(id);
-		buf.putInt(xteas[1]);
-		buf.putInt(xteas[3]);
 		sendPacket(buf.toPacket());
 	}
 	
@@ -155,8 +157,8 @@ public class ActionSender {
 	public void sendFixedVarp(int id, int value) {
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		PacketBuf buf = new PacketBuf(FIXED_VARP_PACKET);
-		buf.putLEShortA(id);
-		buf.putByteC(value);
+		buf.putByteA(value);
+		buf.putLEShort(id);
 		sendPacket(buf.toPacket());
 	}
 
@@ -168,8 +170,8 @@ public class ActionSender {
 	public void sendDynamicVarp(int id, int value) {
 		//NOTE: The order and encoding methods of this packet vary between client revisions
 		PacketBuf buf = new PacketBuf(DYNAMIC_VARP_PACKET);
-		buf.putInt(value);
-		buf.putLEShort(id);
+		buf.putLEShortA(id);
+		buf.putInt1(value);
 		sendPacket(buf.toPacket());
 	}
 
@@ -331,7 +333,7 @@ public class ActionSender {
 	 */
 	public void sendLogin() {
 		sendMapRegion(true);
-		player.sendLobbyConfigs(Constants.LOBBY_CONFIGS_795);
+		player.sendLobbyConfigs(Constants.LOBBY_CONFIGS_802);
 		sendWindowPane(1477, 0);
 		sendGameScreen();
 		sendDefaultPlayersOptions();
@@ -530,15 +532,16 @@ public class ActionSender {
 
 	/**
 	 * Sends a level of an skill.
-	 * @param skillLevel The ID of the skill level.
-	 *//*
-	public void sendSkillLevel(int skillLevel) {
-		PacketBuf buf = new PacketBuf(38);
-		buf.putByteA(player.getSkills().currentLevel(skillLevel));
-		buf.putInt1((int) player.getSkills().getExp(skillLevel));
-		buf.put((byte) skillLevel);
+	 * @param skillID The ID of the skill level.
+	 */
+	public void sendSkillLevel(int skillID) {
+		Skill skill = player.getSkills().getSkill(skillID);
+		PacketBuf buf = new PacketBuf(SKILL_DATA_PACKET);
+		buf.putByteC((byte) skillID);
+		buf.putInt2((int) skill.getExperience());
+		buf.putByteS(skill.getCurrentLevel());
 		player.getChannel().write(buf.toPacket());
-	}*/
+	}
 
 	/**
 	 * Sends the run energy.
