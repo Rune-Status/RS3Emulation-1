@@ -66,6 +66,7 @@ public final class ParallelClientSynchronizer extends ClientSynchronizer {
 
 	@Override
 	public void synchronize() {
+		long begin = System.nanoTime();
 		for (World world : Main.getWorlds()) {
 			if (!world.isGame()) {
 				continue;//Process is only needed for game worlds
@@ -94,6 +95,9 @@ public final class ParallelClientSynchronizer extends ClientSynchronizer {
 			}
 			phaser.arriveAndAwaitAdvance();
 		}
+		long end = System.nanoTime();
+		
+		//System.out.println("Took " + (end - begin) / (1000000D * Main.getPlayers().size()) + "ms, with " + Main.getPlayers().size() + " players.");
 	}
 
 }

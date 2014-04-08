@@ -43,7 +43,9 @@ public class OutgoingOpcode {
 	public static final int SKILL_DATA_PACKET = 4;//803
 	
 	public static final int INTERFACE_PACKET = 49;//803
+	public static final int INTERFACE_SETTINGS_PACKET = 134;//803
 	public static final int WINDOW_PANE_PACKET = 76;//803
+	public static final int RUN_CS2_PACKET = 167;//803
 	
 	public static final int WORLD_LIST_PACKET = 98;//803
 	public static final int MESSAGE_PACKET = 137;//803

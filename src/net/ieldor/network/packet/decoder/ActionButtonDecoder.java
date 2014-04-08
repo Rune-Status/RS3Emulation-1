@@ -19,6 +19,7 @@ package net.ieldor.network.packet.decoder;
 import net.ieldor.io.PacketReader;
 import net.ieldor.network.packet.PacketDecoder;
 import net.ieldor.network.packet.context.ActionButtonContext;
+import net.ieldor.network.packet.context.ActionButtonContext.MenuOption;
 
 /**
  * An {@link PacketDecoder} that is used to handle action buttons.
@@ -33,15 +34,16 @@ public class ActionButtonDecoder implements PacketDecoder<ActionButtonContext> {
 	 */
 	@Override
 	public ActionButtonContext decode(PacketReader packet) {
-		int interfaceId = packet.getShort() & 0xFFFF;
-		int buttonId = packet.getShort() & 0xFFFF;
-		int buttonId2 = 0;
-		if(packet.getLength() >= 6) {
-			buttonId2 = packet.getShort() & 0xFFFF;
+		MenuOption option = MenuOption.getOptionFromOpcode(packet.getOpcode());
+		int buttonID = packet.getLEShortA() & 0xFFFF;
+		if(buttonID == 65535) {
+			buttonID = -1;
 		}
+		int buttonId2 = packet.getShort() & 0xFFFF;
 		if(buttonId2 == 65535) {
-			buttonId2 = 0;
+			buttonId2 = -1;
 		}
-		return new ActionButtonContext(interfaceId, buttonId, buttonId2);
+		int interfaceId = packet.getInt();
+		return new ActionButtonContext(option, interfaceId, buttonID, buttonId2);
 	}
 }

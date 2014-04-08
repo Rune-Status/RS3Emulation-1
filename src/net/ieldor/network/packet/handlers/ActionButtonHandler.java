@@ -16,7 +16,6 @@
  */
 package net.ieldor.network.packet.handlers;
 
-import net.ieldor.Constants;
 import net.ieldor.game.model.player.Player;
 import net.ieldor.network.packet.PacketHandler;
 import net.ieldor.network.packet.context.ActionButtonContext;
@@ -39,8 +38,8 @@ public class ActionButtonHandler implements PacketHandler<ActionButtonContext> {
 	 */
 	@Override
 	public void handle(Player player, ActionButtonContext context) {
-		System.out.println("InterfaceId: " + context.getInterfaceId() + " ButtonId: " + context.getButtonId() + " ButtonId2: " + context.getButtonId2());
-		switch(context.getInterfaceId()) {
+		System.out.println("InterfaceID: " + context.getInterfaceID() + " ComponentID: "+ context.getComponentID() + " ButtonId: " + context.getButtonId() + " ButtonId2: " + context.getButtonId2());
+		/*switch(context.getInterfaceId()) {
 		case 182:
 			if(context.getButtonId() == 6) {
 				player.getActionSender().sendLogout();
@@ -79,6 +78,6 @@ public class ActionButtonHandler implements PacketHandler<ActionButtonContext> {
 			case 499:
 				player.getActionSender().sendLargeVarp(965, Constants.SUB_CONFIG[context.getButtonId() - 10] + currentSkillIndex);
 				break;
-		}
+		}*/
 	}
 }

@@ -45,6 +45,7 @@ public class PlayerUpdate {
 	private int otherPlayerCount = 0;
 	
 	private int[] regionHashes = new int[2048];
+	public boolean ready = false;
 	
 	public PlayerUpdate(Player player) {
 		this.player = player;
@@ -64,6 +65,7 @@ public class PlayerUpdate {
 			otherPlayerIndicies[otherPlayerCount++] = index;
 		}
 		buf.switchToByteAccess();
+		ready = true;
 	}
 
 	public Packet makePacket() {

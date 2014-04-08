@@ -58,7 +58,7 @@ public class BinaryPlayerManager {
 	/**
 	 * The default spawn position.
 	 */
-	private static final Position SPAWN_POSITION = new Position(3200, 3200, 0);
+	private static final Position SPAWN_POSITION = new Position(2846, 3536, 0);
 	
 	/**
 	 * The current player file version. This should be incremented if new fields are added to the player data file

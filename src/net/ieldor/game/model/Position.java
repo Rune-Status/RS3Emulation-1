@@ -146,7 +146,8 @@ public final class Position {
 
 	@Override
 	public int hashCode() {
-		return ((height << 30) & 0xC0000000) | ((y << 15) & 0x3FFF8000) | (x & 0x7FFF);
+		System.out.println("Height: "+height+", y: "+y+", x="+x);
+		return ((height << 28) /*& 0xC0000000*/) | ((y << 14) /*& 0x3FFF8000*/) | (x /*& 0x7FFF*/);
 	}
 
 	/**

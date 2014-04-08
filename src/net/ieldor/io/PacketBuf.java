@@ -214,6 +214,7 @@ public final class PacketBuf {
 			tmp |= (value & BIT_MASKS[numberOfBits]) << (bitOffset - numberOfBits);
 			payload.setByte(bytePos, tmp);
 		}
+        payload.setIndex(0, bytePos);
 	}
 
 	/**

@@ -59,7 +59,13 @@ public final class PacketCodec {
 	 */
 	public PacketCodec() {
 		try {
-			//register(new int[] { 155, 10 }, new ActionButtonDecoder(), new ActionButtonHandler());
+			register(new int[] { 
+						IncommingOpcode.ACTION_BUTTON_1_PACKET, IncommingOpcode.ACTION_BUTTON_2_PACKET,
+						IncommingOpcode.ACTION_BUTTON_3_PACKET, IncommingOpcode.ACTION_BUTTON_4_PACKET,
+						IncommingOpcode.ACTION_BUTTON_5_PACKET, IncommingOpcode.ACTION_BUTTON_6_PACKET,
+						IncommingOpcode.ACTION_BUTTON_7_PACKET, IncommingOpcode.ACTION_BUTTON_8_PACKET,
+						IncommingOpcode.ACTION_BUTTON_9_PACKET, IncommingOpcode.ACTION_BUTTON_10_PACKET
+					}, new ActionButtonDecoder(), new ActionButtonHandler());
 			//register(new int[] { 77, 39, 77 }, new MovementDecoder(), new MovementHandler());
 			//register(new int[] { 237 }, new ChatDecoder(), new ChatHandler());
 			//register(new int[] { 55 }, new EquipItemDecoder(), new EquipItemHandler());

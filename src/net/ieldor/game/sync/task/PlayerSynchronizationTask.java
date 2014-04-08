@@ -35,9 +35,10 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 
 	@Override
 	public void run() {
-		long begin = System.nanoTime();
-		System.out.println("Sending player updates to: "+player);
-		player.getActionSender().sendPlayerUpdates();
+		if (player.getPlayerUpdater().ready) {
+			System.out.println("Sending player updates to: "+player);
+			player.getActionSender().sendPlayerUpdates();
+		}
 		/*if(player.hasScheduledRegionChange()) {
 			player.getActionSender().sendMapRegion(false);
 		}
@@ -84,9 +85,6 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 			packet.getPayload().writeBytes(block.getPayload());
 		player.getChannel().write(packet.toPacket());*/
 		
-		long end = System.nanoTime();
-		
-		System.out.println("Took " + (end - begin) / (1000000D * Main.getPlayers().size()) + "ms, with " + Main.getPlayers().size() + " players.");
 	}
 	
 	/**
